@@ -1,0 +1,21 @@
+{
+    "folders": [
+        {
+            "name": "xsd-visualizer",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "./.venv/bin/python",
+        "files.associations": {
+            "*.xsd": "xml"
+        }
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "redhat.vscode-xml",
+            "ms-python.vscode-pylance"
+        ]
+    }
+}

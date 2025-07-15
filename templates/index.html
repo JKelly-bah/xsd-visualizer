@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XSD Documentation - {{ metadata.file_path | basename }}</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>XSD Schema Documentation</h1>
+        <p class="schema-info">{{ metadata.file_path | basename }}</p>
+        {% if metadata.target_namespace %}
+        <p class="namespace">Target Namespace: <code>{{ metadata.target_namespace }}</code></p>
+        {% endif %}
+    </header>
+
+    <nav class="main-nav">
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#elements">Elements</a></li>
+            <li><a href="#types">Types</a></li>
+            <li><a href="#dependencies">Dependencies</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview" class="overview">
+            <h2>Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>{{ statistics.total_elements }}</h3>
+                    <p>Total Elements</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ statistics.total_complex_types }}</h3>
+                    <p>Complex Types</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ statistics.total_simple_types }}</h3>
+                    <p>Simple Types</p>
+                </div>
+                <div class="stat-card">
+                    <h3>{{ statistics.max_depth }}</h3>
+                    <p>Max Depth</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="elements" class="elements">
+            <h2>Root Elements</h2>
+            {% if elements %}
+            <div class="element-grid">
+                {% for element in elements %}
+                <div class="element-card">
+                    <h3><a href="elements/{{ element.name }}.html">{{ element.name }}</a></h3>
+                    {% if element.type %}
+                    <p class="element-type">Type: <a href="{{ element.type | get_type_link }}">{{ element.type }}</a></p>
+                    {% endif %}
+                    <p class="occurs">{{ element.min_occurs | format_occurs(element.max_occurs) }}</p>
+                    {% if element.documentation %}
+                    <div class="documentation">{{ element.documentation | format_documentation | safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No root elements found.</p>
+            {% endif %}
+
+            <h2>Global Elements</h2>
+            {% if global_elements %}
+            <div class="element-grid">
+                {% for name, element in global_elements.items() %}
+                <div class="element-card">
+                    <h3><a href="elements/{{ element.name }}.html">{{ element.name }}</a></h3>
+                    {% if element.type %}
+                    <p class="element-type">Type: <a href="{{ element.type | get_type_link }}">{{ element.type }}</a></p>
+                    {% endif %}
+                    <p class="occurs">{{ element.min_occurs | format_occurs(element.max_occurs) }}</p>
+                    {% if element.documentation %}
+                    <div class="documentation">{{ element.documentation | format_documentation | safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No global elements found.</p>
+            {% endif %}
+        </section>
+
+        <section id="types" class="types">
+            <h2>Complex Types</h2>
+            {% if complex_types %}
+            <div class="type-grid">
+                {% for name, type in complex_types.items() %}
+                <div class="type-card">
+                    <h3><a href="types/{{ name }}.html">{{ name }}</a></h3>
+                    <p class="element-count">{{ type.elements | length }} elements</p>
+                    <p class="attribute-count">{{ type.attributes | length }} attributes</p>
+                    {% if type.documentation %}
+                    <div class="documentation">{{ type.documentation | format_documentation | safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No complex types found.</p>
+            {% endif %}
+
+            <h2>Simple Types</h2>
+            {% if simple_types %}
+            <div class="type-grid">
+                {% for name, type in simple_types.items() %}
+                <div class="type-card simple-type">
+                    <h3><a href="types/{{ name }}.html">{{ name }}</a></h3>
+                    {% if type.base_type %}
+                    <p class="base-type">Base: {{ type.base_type }}</p>
+                    {% endif %}
+                    {% if type.enumerations %}
+                    <p class="enum-count">{{ type.enumerations | length }} values</p>
+                    {% endif %}
+                    {% if type.documentation %}
+                    <div class="documentation">{{ type.documentation | format_documentation | safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p>No simple types found.</p>
+            {% endif %}
+        </section>
+
+        <section id="dependencies" class="dependencies">
+            <h2>Dependencies</h2>
+            <p><a href="dependencies.html">View Dependency Diagram</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Generated by XSD Visualization Tools</p>
+    </footer>
+
+    <script src="static/script.js"></script>
+</body>
+</html>

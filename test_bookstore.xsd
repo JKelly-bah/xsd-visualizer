@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/bookstore"
+           xmlns:tns="http://example.com/bookstore"
+           elementFormDefault="qualified">
+
+    <!-- Documentation for the schema -->
+    <xs:annotation>
+        <xs:documentation>
+            Sample bookstore schema for testing XSD visualization tools.
+            This schema defines a simple bookstore with books, authors, and categories.
+        </xs:documentation>
+    </xs:annotation>
+
+    <!-- Simple types -->
+    <xs:simpleType name="ISBNType">
+        <xs:annotation>
+            <xs:documentation>ISBN number format</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{3}-[0-9]{1}-[0-9]{3}-[0-9]{5}-[0-9]{1}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="CategoryType">
+        <xs:annotation>
+            <xs:documentation>Book categories</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Fiction"/>
+            <xs:enumeration value="Non-Fiction"/>
+            <xs:enumeration value="Science"/>
+            <xs:enumeration value="Technology"/>
+            <xs:enumeration value="History"/>
+            <xs:enumeration value="Biography"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Complex types -->
+    <xs:complexType name="AuthorType">
+        <xs:annotation>
+            <xs:documentation>Author information</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:string"/>
+            <xs:element name="lastName" type="xs:string"/>
+            <xs:element name="birthYear" type="xs:int" minOccurs="0"/>
+            <xs:element name="biography" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="authorId" type="xs:ID" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="BookType">
+        <xs:annotation>
+            <xs:documentation>Book information</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="author" type="tns:AuthorType" maxOccurs="unbounded"/>
+            <xs:element name="isbn" type="tns:ISBNType"/>
+            <xs:element name="publishedYear" type="xs:int"/>
+            <xs:element name="category" type="tns:CategoryType"/>
+            <xs:element name="price" type="xs:decimal"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="inStock" type="xs:boolean" default="true"/>
+        </xs:sequence>
+        <xs:attribute name="bookId" type="xs:ID" use="required"/>
+        <xs:attribute name="edition" type="xs:int" default="1"/>
+    </xs:complexType>
+
+    <xs:complexType name="BookstoreType">
+        <xs:annotation>
+            <xs:documentation>Main bookstore container</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="storeName" type="xs:string"/>
+            <xs:element name="address" type="xs:string"/>
+            <xs:element name="book" type="tns:BookType" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="storeId" type="xs:string" use="required"/>
+        <xs:attribute name="established" type="xs:date"/>
+    </xs:complexType>
+
+    <!-- Root element -->
+    <xs:element name="bookstore" type="tns:BookstoreType">
+        <xs:annotation>
+            <xs:documentation>Root element representing a bookstore</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <!-- Global elements -->
+    <xs:element name="author" type="tns:AuthorType">
+        <xs:annotation>
+            <xs:documentation>Standalone author element</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="book" type="tns:BookType">
+        <xs:annotation>
+            <xs:documentation>Standalone book element</xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+</xs:schema>

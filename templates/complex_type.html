@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complex Type: {{ complex_type.name }} - XSD Documentation</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Complex Type: {{ complex_type.name }}</h1>
+        <p class="type-category">Complex Type Definition</p>
+    </header>
+
+    <nav class="breadcrumb">
+        <a href="../index.html">Schema</a> → 
+        <a href="../index.html#types">Types</a> → 
+        <span>{{ complex_type.name }}</span>
+    </nav>
+
+    <main>
+        <section class="type-details">
+            <h2>Type Details</h2>
+            
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <strong>Name:</strong> {{ complex_type.name }}
+                </div>
+                
+                {% if complex_type.base_type %}
+                <div class="detail-item">
+                    <strong>Base Type:</strong> 
+                    <a href="{{ complex_type.base_type | get_type_link }}">{{ complex_type.base_type }}</a>
+                </div>
+                {% endif %}
+                
+                <div class="detail-item">
+                    <strong>Elements:</strong> {{ complex_type.elements | length }}
+                </div>
+                
+                <div class="detail-item">
+                    <strong>Attributes:</strong> {{ complex_type.attributes | length }}
+                </div>
+            </div>
+
+            {% if complex_type.documentation %}
+            <div class="documentation-section">
+                <h3>Documentation</h3>
+                <div class="documentation">
+                    {{ complex_type.documentation | format_documentation | safe }}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        {% if complex_type.elements %}
+        <section class="elements-section">
+            <h2>Elements ({{ complex_type.elements | length }})</h2>
+            <div class="element-grid">
+                {% for element in complex_type.elements %}
+                <div class="element-card">
+                    <h3>{{ element.name }}</h3>
+                    {% if element.type %}
+                    <p class="element-type">Type: <a href="{{ element.type | get_type_link }}">{{ element.type }}</a></p>
+                    {% endif %}
+                    <p class="occurs">{{ element.min_occurs | format_occurs(element.max_occurs) }}</p>
+                    {% if element.documentation %}
+                    <div class="documentation">{{ element.documentation | format_documentation | safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% if complex_type.attributes %}
+        <section class="attributes-section">
+            <h2>Attributes ({{ complex_type.attributes | length }})</h2>
+            <table class="attributes-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Use</th>
+                        <th>Default</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attr in complex_type.attributes %}
+                    <tr>
+                        <td><code>{{ attr.name }}</code></td>
+                        <td>
+                            {% if attr.type %}
+                            <a href="{{ attr.type | get_type_link }}">{{ attr.type }}</a>
+                            {% else %}
+                            <em>unspecified</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="use-{{ attr.use }}">{{ attr.use }}</span>
+                        </td>
+                        <td>
+                            {% if attr.default %}
+                            <code>{{ attr.default }}</code>
+                            {% else %}
+                            <em>none</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p><a href="../index.html">← Back to Schema Overview</a></p>
+    </footer>
+
+    <script src="../static/script.js"></script>
+</body>
+</html>

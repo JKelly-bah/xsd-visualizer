@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Element: {{ element.name }} - XSD Documentation</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Element: {{ element.name }}</h1>
+        {% if is_global %}
+        <p class="element-type">Global Element</p>
+        {% else %}
+        <p class="element-type">Local Element</p>
+        {% endif %}
+    </header>
+
+    <nav class="breadcrumb">
+        <a href="../index.html">Schema</a> → 
+        <a href="../index.html#elements">Elements</a> → 
+        <span>{{ element.name }}</span>
+    </nav>
+
+    <main>
+        <section class="element-details">
+            <h2>Element Details</h2>
+            
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <strong>Name:</strong> {{ element.name }}
+                </div>
+                
+                {% if element.type %}
+                <div class="detail-item">
+                    <strong>Type:</strong> 
+                    <a href="{{ element.type | get_type_link }}">{{ element.type }}</a>
+                </div>
+                {% endif %}
+                
+                <div class="detail-item">
+                    <strong>Occurrence:</strong> {{ element.min_occurs | format_occurs(element.max_occurs) }}
+                </div>
+                
+                {% if element.namespace %}
+                <div class="detail-item">
+                    <strong>Namespace:</strong> <code>{{ element.namespace }}</code>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if element.documentation %}
+            <div class="documentation-section">
+                <h3>Documentation</h3>
+                <div class="documentation">
+                    {{ element.documentation | format_documentation | safe }}
+                </div>
+            </div>
+            {% endif %}
+        </section>
+
+        {% if element.attributes %}
+        <section class="attributes-section">
+            <h2>Attributes ({{ element.attributes | length }})</h2>
+            <table class="attributes-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Use</th>
+                        <th>Default</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attr in element.attributes %}
+                    <tr>
+                        <td><code>{{ attr.name }}</code></td>
+                        <td>
+                            {% if attr.type %}
+                            <a href="{{ attr.type | get_type_link }}">{{ attr.type }}</a>
+                            {% else %}
+                            <em>unspecified</em>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="use-{{ attr.use }}">{{ attr.use }}</span>
+                        </td>
+                        <td>
+                            {% if attr.default %}
+                            <code>{{ attr.default }}</code>
+                            {% else %}
+                            <em>none</em>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        {% if element.children %}
+        <section class="children-section">
+            <h2>Child Elements ({{ element.children | length }})</h2>
+            <div class="tree-container">
+                <div class="tree-visualization">
+                    {% for child in element.children %}
+                    <div class="tree-item">
+                        <span class="tree-element">{{ child.name }}</span>
+                        {% if child.type %}
+                        <span class="tree-type">: {{ child.type }}</span>
+                        {% endif %}
+                        <span class="tree-occurs">[{{ child.min_occurs }}..{{ child.max_occurs }}]</span>
+                        {% if child.documentation %}
+                        <div class="tree-doc">{{ child.documentation }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        {% if dependencies %}
+        <section class="dependencies-section">
+            <h2>Dependencies</h2>
+            <p>This element depends on the following types:</p>
+            <ul class="dependency-list">
+                {% for dep in dependencies %}
+                <li><a href="{{ dep | get_type_link }}">{{ dep }}</a></li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% if dependents %}
+        <section class="dependents-section">
+            <h2>Used By</h2>
+            <p>This element is used by the following components:</p>
+            <ul class="dependency-list">
+                {% for dependent in dependents %}
+                <li>{{ dependent }}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </main>
+
+    <footer>
+        <p><a href="../index.html">← Back to Schema Overview</a></p>
+    </footer>
+
+    <script src="../static/script.js"></script>
+</body>
+</html>
