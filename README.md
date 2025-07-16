@@ -3,6 +3,7 @@
 A comprehensive offline toolkit for visualizing and analyzing large, complex XSD (XML Schema Definition) files. This workspace provides powerful tools for understanding schema structure, generating documentation, and creating visual representations without requiring any online services.
 
 **🆕 Latest Features:**
+- **Relationship Analyzer** - Analyze and explain relationships between multiple XSD files
 - **Multi-File Schema Support** - Handle imports, includes, and redefines across multiple XSD files
 - **Selective Analysis** - Cherry-pick specific elements, types, or namespaces from different files
 
@@ -18,6 +19,9 @@ python xsd_analyzer.py main_schema.xsd --multi-file --formats html
 
 # Cherry-pick specific components (NEW!)
 python demo_selective.py
+
+# Analyze relationships between files (NEW!)
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 
 # Tree visualization
 python tree_visualizer.py schema.xsd --format console
@@ -36,6 +40,9 @@ python xsd_analyzer.py main_schema.xsd --multi-file --formats html
 
 # Cherry-pick specific components (NEW!)
 python demo_selective.py
+
+# Analyze relationships between files (NEW!)
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 
 # Tree visualization
 python tree_visualizer.py schema.xsd --format console
@@ -120,6 +127,7 @@ The toolkit is **fully functional** with all core features implemented:
 
 - **XSD Parser**: Extract structure and relationships from XSD files
 - **Multi-File Parser** (NEW): Handle schemas with imports, includes, and redefines
+- **Relationship Analyzer** (NEW): Analyze and explain relationships between multiple XSD files
 - **HTML Documentation Generator**: Create browsable documentation with hyperlinks
 - **Tree Visualization**: Generate hierarchical views of schema structures
 - **Element Inspector**: Interactive tool for examining specific elements and types
@@ -182,6 +190,7 @@ XSD_Visualizations/
 │   └── common-types.xsd         # Included common types
 ├── xsd_analyzer.py               # Main analysis tool
 ├── selective_analyzer.py         # Selective analysis tool (NEW)
+├── relationship_analyzer.py      # Multi-file relationship analyzer (NEW)
 ├── tree_visualizer.py            # Tree structure visualization
 ├── element_inspector.py          # Interactive element examination
 ├── demo.py                       # Usage examples and help
@@ -305,6 +314,32 @@ python element_inspector.py schema.xsd
 python element_inspector.py schema.xsd --search "book"
 ```
 
+### Relationship Analysis (NEW! 🔗)
+
+**Unix/macOS/Linux:**
+```bash
+# Analyze relationships between multiple XSD files
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
+
+# Generate JSON and text reports
+python relationship_analyzer.py *.xsd --output-dir ./reports
+
+# Quick analysis with reports only
+python relationship_analyzer.py schemas/*.xsd --report-only
+```
+
+**Windows PowerShell:**
+```powershell
+# Analyze relationships between multiple XSD files
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
+
+# Generate JSON and text reports
+python relationship_analyzer.py *.xsd --output-dir ./reports
+
+# Quick analysis with reports only
+python relationship_analyzer.py schemas/*.xsd --report-only
+```
+
 ### Selective Analysis (NEW! 🎯)
 
 **Unix/macOS/Linux:**
@@ -343,6 +378,7 @@ Use `Ctrl+Shift+P` → "Tasks: Run Task" to access:
 - **Generate HTML Documentation** - HTML docs only  
 - **Visualize Tree (Console)** - Console tree display
 - **Quick Summary** - Statistics overview
+- **Analyze Relationships** - Multi-file relationship analysis (NEW!)
 
 ## 📋 Command Line Reference
 
@@ -512,6 +548,50 @@ python selective_analyzer.py file1.xsd --elements Book file2.xsd --complex-types
 python selective_analyzer.py schema.xsd --namespaces "http://example.com/library"
 
 # Note: For complex selections, use the Python API (see demo_selective.py)
+```
+
+### Relationship Analyzer - `relationship_analyzer.py` (NEW! 🔗)
+
+**Unix/macOS/Linux:**
+```bash
+# Basic usage
+python relationship_analyzer.py file1.xsd file2.xsd [more_files...] [options]
+
+# Options:
+--output-dir, -o DIR     Output directory (default: ./output/relationships)
+--verbose, -v           Enable verbose logging
+--report-only           Show analysis in console and save reports (no interactive display)
+
+# Examples:
+# Analyze relationships between multiple files
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
+
+# Generate comprehensive reports
+python relationship_analyzer.py test_multifile/*.xsd --output-dir ./reports
+
+# Quick analysis with reports only
+python relationship_analyzer.py *.xsd --report-only
+```
+
+**Windows PowerShell:**
+```powershell
+# Basic usage
+python relationship_analyzer.py file1.xsd file2.xsd [more_files...] [options]
+
+# Options:
+--output-dir, -o DIR     Output directory (default: ./output/relationships)
+--verbose, -v           Enable verbose logging
+--report-only           Show analysis in console and save reports (no interactive display)
+
+# Examples:
+# Analyze relationships between multiple files
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
+
+# Generate comprehensive reports
+python relationship_analyzer.py test_multifile/*.xsd --output-dir ./reports
+
+# Quick analysis with reports only
+python relationship_analyzer.py *.xsd --report-only
 ```
 
 ### Demo Scripts

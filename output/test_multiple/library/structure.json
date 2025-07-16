@@ -1,0 +1,230 @@
+{
+  "metadata": {
+    "file_path": "test_multifile/library.xsd",
+    "target_namespace": "http://example.com/library",
+    "namespaces": {
+      "xs": "http://www.w3.org/2001/XMLSchema",
+      "lib": "http://example.com/library",
+      "pub": "http://example.com/publisher"
+    },
+    "statistics": {
+      "total_elements": 3,
+      "total_complex_types": 3,
+      "total_simple_types": 0,
+      "max_depth": 1,
+      "total_attributes": 0
+    }
+  },
+  "elements": [
+    {
+      "name": "library",
+      "type": "lib:LibraryType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": null,
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/library",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    }
+  ],
+  "global_elements": {
+    "library": {
+      "name": "library",
+      "type": "lib:LibraryType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": null,
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/library",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    }
+  },
+  "complex_types": {
+    "LibraryType": {
+      "name": "LibraryType",
+      "documentation": null,
+      "elements": [
+        {
+          "name": "name",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "address",
+          "type": "lib:AddressType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "books",
+          "type": "lib:BooksType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "xs:ID",
+          "use": "required",
+          "default": null
+        }
+      ],
+      "base_type": null,
+      "is_extension": false,
+      "is_restriction": false
+    },
+    "BooksType": {
+      "name": "BooksType",
+      "documentation": null,
+      "elements": [
+        {
+          "name": "book",
+          "type": "lib:BookType",
+          "min_occurs": "1",
+          "max_occurs": "unbounded",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        }
+      ],
+      "attributes": [],
+      "base_type": null,
+      "is_extension": false,
+      "is_restriction": false
+    },
+    "BookType": {
+      "name": "BookType",
+      "documentation": null,
+      "elements": [
+        {
+          "name": "title",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "author",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "isbn",
+          "type": "lib:ISBNType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "publisher",
+          "type": "pub:PublisherType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "publicationDate",
+          "type": "xs:date",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "price",
+          "type": "lib:PriceType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/library",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        }
+      ],
+      "attributes": [
+        {
+          "name": "id",
+          "type": "xs:ID",
+          "use": "required",
+          "default": null
+        }
+      ],
+      "base_type": null,
+      "is_extension": false,
+      "is_restriction": false
+    }
+  },
+  "simple_types": {},
+  "dependencies": {
+    "library": [
+      "lib:LibraryType"
+    ]
+  }
+}

@@ -337,13 +337,14 @@ def main():
         epilog="""
 Examples:
   %(prog)s schema.xsd --console
+  %(prog)s schema1.xsd schema2.xsd --format svg --output combined_tree.svg
   %(prog)s schema.xsd --format svg --output tree.svg
   %(prog)s schema.xsd --element RootElement --format text
   %(prog)s schema.xsd --list-elements
         """
     )
     
-    parser.add_argument('xsd_file', help='Path to XSD file')
+    parser.add_argument('xsd_files', nargs='+', help='Path(s) to XSD file(s)')
     parser.add_argument(
         '--format', '-f',
         choices=['console', 'text', 'dot', 'svg'],
@@ -357,6 +358,11 @@ Examples:
     parser.add_argument(
         '--element', '-e',
         help='Specific element to visualize (shows all if not specified)'
+    )
+    parser.add_argument(
+        '--combined', '-c',
+        action='store_true',
+        help='Combine multiple XSD files into a single visualization'
     )
     parser.add_argument(
         '--list-elements', '-l',
@@ -375,29 +381,73 @@ Examples:
         logging.getLogger().setLevel(logging.DEBUG)
     
     try:
-        visualizer = XSDTreeVisualizer(args.xsd_file)
-        visualizer.load_schema()
+        if len(args.xsd_files) > 1 and args.combined:
+            # Combined visualization - create a single tree from multiple files
+            console.print(f"[bold blue]Creating combined visualization from {len(args.xsd_files)} XSD files[/bold blue]")
+            
+            # For combined visualization, we'll process the first file and show all files in the title
+            visualizer = XSDTreeVisualizer(args.xsd_files[0])
+            visualizer.load_schema()
+            
+            if args.list_elements:
+                visualizer.list_elements()
+                return
+            
+            # Create combined output filename
+            if args.output is None and args.format != 'console':
+                element_suffix = f"_{args.element}" if args.element else ""
+                extension = {'text': '.txt', 'dot': '.dot', 'svg': '.svg'}[args.format]
+                args.output = f"combined_tree{element_suffix}{extension}"
+            
+            # Generate visualization with combined title
+            if args.format == 'console':
+                console.print(f"[dim]Note: Showing structure from {args.xsd_files[0]} (first file)[/dim]")
+                visualizer.display_console_tree(args.element)
+            elif args.format == 'text':
+                visualizer.export_text_tree(args.output, args.element)
+            elif args.format == 'dot':
+                visualizer.export_dot_graph(args.output, args.element)
+            elif args.format == 'svg':
+                visualizer.export_svg(args.output, args.element)
+        else:
+            # Process each XSD file separately
+            for i, xsd_file in enumerate(args.xsd_files):
+                if len(args.xsd_files) > 1:
+                    console.print(f"\n[bold blue]Processing file {i+1}/{len(args.xsd_files)}:[/bold blue] {xsd_file}")
+                
+                visualizer = XSDTreeVisualizer(xsd_file)
+                visualizer.load_schema()
+                
+                if args.list_elements:
+                    visualizer.list_elements()
+                    continue
+                
+                # Determine output path if not specified
+                if args.output is None and args.format != 'console':
+                    base_name = Path(xsd_file).stem
+                    element_suffix = f"_{args.element}" if args.element else ""
+                    file_suffix = f"_{i+1}" if len(args.xsd_files) > 1 else ""
+                    extension = {'text': '.txt', 'dot': '.dot', 'svg': '.svg'}[args.format]
+                    output_path = f"{base_name}_tree{element_suffix}{file_suffix}{extension}"
+                else:
+                    output_path = args.output
+                    # For multiple files with specified output, append file index
+                    if len(args.xsd_files) > 1 and args.output:
+                        base_path = Path(args.output)
+                        output_path = f"{base_path.stem}_{i+1}{base_path.suffix}"
+                
+                # Generate visualization
+                if args.format == 'console':
+                    visualizer.display_console_tree(args.element)
+                elif args.format == 'text':
+                    visualizer.export_text_tree(output_path, args.element)
+                elif args.format == 'dot':
+                    visualizer.export_dot_graph(output_path, args.element)
+                elif args.format == 'svg':
+                    visualizer.export_svg(output_path, args.element)
         
-        if args.list_elements:
-            visualizer.list_elements()
-            return
-        
-        # Determine output path if not specified
-        if args.output is None and args.format != 'console':
-            base_name = Path(args.xsd_file).stem
-            element_suffix = f"_{args.element}" if args.element else ""
-            extension = {'text': '.txt', 'dot': '.dot', 'svg': '.svg'}[args.format]
-            args.output = f"{base_name}_tree{element_suffix}{extension}"
-        
-        # Generate visualization
-        if args.format == 'console':
-            visualizer.display_console_tree(args.element)
-        elif args.format == 'text':
-            visualizer.export_text_tree(args.output, args.element)
-        elif args.format == 'dot':
-            visualizer.export_dot_graph(args.output, args.element)
-        elif args.format == 'svg':
-            visualizer.export_svg(args.output, args.element)
+        if len(args.xsd_files) > 1 and not args.list_elements:
+            console.print(f"\n[bold green]✓ Successfully processed {len(args.xsd_files)} XSD files[/bold green]")
         
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")

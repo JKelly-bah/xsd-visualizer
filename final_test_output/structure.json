@@ -1,0 +1,395 @@
+{
+  "metadata": {
+    "file_path": "test_bookstore.xsd",
+    "target_namespace": "http://example.com/bookstore",
+    "namespaces": {
+      "xs": "http://www.w3.org/2001/XMLSchema",
+      "tns": "http://example.com/bookstore"
+    },
+    "statistics": {
+      "total_elements": 9,
+      "total_complex_types": 3,
+      "total_simple_types": 2,
+      "max_depth": 1,
+      "total_attributes": 0
+    }
+  },
+  "elements": [
+    {
+      "name": "bookstore",
+      "type": "tns:BookstoreType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": "Root element representing a bookstore",
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/bookstore",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    },
+    {
+      "name": "author",
+      "type": "tns:AuthorType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": "Standalone author element",
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/bookstore",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    },
+    {
+      "name": "book",
+      "type": "tns:BookType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": "Standalone book element",
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/bookstore",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    }
+  ],
+  "global_elements": {
+    "bookstore": {
+      "name": "bookstore",
+      "type": "tns:BookstoreType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": "Root element representing a bookstore",
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/bookstore",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    },
+    "author": {
+      "name": "author",
+      "type": "tns:AuthorType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": "Standalone author element",
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/bookstore",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    },
+    "book": {
+      "name": "book",
+      "type": "tns:BookType",
+      "min_occurs": "1",
+      "max_occurs": "1",
+      "documentation": "Standalone book element",
+      "attributes": [],
+      "children": [],
+      "namespace": "http://example.com/bookstore",
+      "is_complex_type": false,
+      "is_simple_type": false,
+      "restrictions": {}
+    }
+  },
+  "complex_types": {
+    "AuthorType": {
+      "name": "AuthorType",
+      "documentation": "Author information",
+      "elements": [
+        {
+          "name": "firstName",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "lastName",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "birthYear",
+          "type": "xs:int",
+          "min_occurs": "0",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "biography",
+          "type": "xs:string",
+          "min_occurs": "0",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        }
+      ],
+      "attributes": [
+        {
+          "name": "authorId",
+          "type": "xs:ID",
+          "use": "required",
+          "default": null
+        }
+      ],
+      "base_type": null,
+      "is_extension": false,
+      "is_restriction": false
+    },
+    "BookType": {
+      "name": "BookType",
+      "documentation": "Book information",
+      "elements": [
+        {
+          "name": "title",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "author",
+          "type": "tns:AuthorType",
+          "min_occurs": "1",
+          "max_occurs": "unbounded",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "isbn",
+          "type": "tns:ISBNType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "publishedYear",
+          "type": "xs:int",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "category",
+          "type": "tns:CategoryType",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "price",
+          "type": "xs:decimal",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "description",
+          "type": "xs:string",
+          "min_occurs": "0",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "inStock",
+          "type": "xs:boolean",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        }
+      ],
+      "attributes": [
+        {
+          "name": "bookId",
+          "type": "xs:ID",
+          "use": "required",
+          "default": null
+        },
+        {
+          "name": "edition",
+          "type": "xs:int",
+          "use": "optional",
+          "default": "1"
+        }
+      ],
+      "base_type": null,
+      "is_extension": false,
+      "is_restriction": false
+    },
+    "BookstoreType": {
+      "name": "BookstoreType",
+      "documentation": "Main bookstore container",
+      "elements": [
+        {
+          "name": "storeName",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "address",
+          "type": "xs:string",
+          "min_occurs": "1",
+          "max_occurs": "1",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        },
+        {
+          "name": "book",
+          "type": "tns:BookType",
+          "min_occurs": "1",
+          "max_occurs": "unbounded",
+          "documentation": null,
+          "attributes": [],
+          "children": [],
+          "namespace": "http://example.com/bookstore",
+          "is_complex_type": false,
+          "is_simple_type": false,
+          "restrictions": {}
+        }
+      ],
+      "attributes": [
+        {
+          "name": "storeId",
+          "type": "xs:string",
+          "use": "required",
+          "default": null
+        },
+        {
+          "name": "established",
+          "type": "xs:date",
+          "use": "optional",
+          "default": null
+        }
+      ],
+      "base_type": null,
+      "is_extension": false,
+      "is_restriction": false
+    }
+  },
+  "simple_types": {
+    "ISBNType": {
+      "name": "ISBNType",
+      "base_type": "xs:string",
+      "documentation": "ISBN number format",
+      "restrictions": {
+        "pattern": "[0-9]{3}-[0-9]{1}-[0-9]{3}-[0-9]{5}-[0-9]{1}"
+      },
+      "enumerations": []
+    },
+    "CategoryType": {
+      "name": "CategoryType",
+      "base_type": "xs:string",
+      "documentation": "Book categories",
+      "restrictions": {},
+      "enumerations": [
+        "Fiction",
+        "Non-Fiction",
+        "Science",
+        "Technology",
+        "History",
+        "Biography"
+      ]
+    }
+  },
+  "dependencies": {
+    "bookstore": [
+      "tns:BookstoreType"
+    ],
+    "author": [
+      "tns:AuthorType"
+    ],
+    "book": [
+      "tns:BookType"
+    ]
+  }
+}

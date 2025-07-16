@@ -1,0 +1,61 @@
+XSD SCHEMA ANALYSIS SUMMARY
+==================================================
+
+File: test_bookstore.xsd
+Target Namespace: http://example.com/bookstore
+Namespaces: 2
+
+STATISTICS
+--------------------
+Total Elements: 9
+Complex Types: 3
+Simple Types: 2
+Maximum Depth: 1
+Total Attributes: 0
+
+ROOT ELEMENTS
+--------------------
+bookstore : tns:BookstoreType
+  Documentation: Root element representing a bookstore
+author : tns:AuthorType
+  Documentation: Standalone author element
+book : tns:BookType
+  Documentation: Standalone book element
+
+GLOBAL ELEMENTS
+--------------------
+bookstore : tns:BookstoreType
+  Documentation: Root element representing a bookstore
+author : tns:AuthorType
+  Documentation: Standalone author element
+book : tns:BookType
+  Documentation: Standalone book element
+
+COMPLEX TYPES
+--------------------
+Type: AuthorType
+  Documentation: Author information
+  Elements: 4
+  Attributes: 1
+
+Type: BookType
+  Documentation: Book information
+  Elements: 8
+  Attributes: 2
+
+Type: BookstoreType
+  Documentation: Main bookstore container
+  Elements: 3
+  Attributes: 2
+
+SIMPLE TYPES
+--------------------
+Type: ISBNType
+  Base Type: xs:string
+  Documentation: ISBN number format
+
+Type: CategoryType
+  Base Type: xs:string
+  Enumerations: 6
+  Documentation: Book categories
+

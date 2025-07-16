@@ -1,0 +1,30 @@
+XSD RELATIONSHIP ANALYSIS REPORT
+==================================================
+
+ANALYSIS SUMMARY
+--------------------
+Total Files Analyzed: 1
+File Relationships: 0
+Component Dependencies: 0
+Unique Namespaces: 3
+
+FILES ANALYZED
+--------------------
+• test_bookstore.xsd
+
+NAMESPACE ANALYSIS
+--------------------
+Namespace: http://example.com/bookstore
+  Used in files: test_bookstore.xsd
+  Target namespace in: test_bookstore.xsd
+
+Namespace: xs
+  Used in files: test_bookstore.xsd
+  Prefixes:
+    http://www.w3.org/2001/XMLSchema: test_bookstore.xsd
+
+Namespace: tns
+  Used in files: test_bookstore.xsd
+  Prefixes:
+    http://example.com/bookstore: test_bookstore.xsd
+

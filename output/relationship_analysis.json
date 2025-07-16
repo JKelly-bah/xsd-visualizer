@@ -1,0 +1,46 @@
+{
+  "analysis_summary": {
+    "total_files": 1,
+    "file_relationships": 0,
+    "component_dependencies": 0,
+    "unique_namespaces": 3
+  },
+  "files_analyzed": [
+    "test_bookstore.xsd"
+  ],
+  "file_relationships": [],
+  "component_dependencies": [],
+  "namespaces": {
+    "http://example.com/bookstore": {
+      "files": [
+        "test_bookstore.xsd"
+      ],
+      "is_target_namespace": [
+        "test_bookstore.xsd"
+      ],
+      "prefixes": {}
+    },
+    "xs": {
+      "files": [
+        "test_bookstore.xsd"
+      ],
+      "is_target_namespace": [],
+      "prefixes": {
+        "http://www.w3.org/2001/XMLSchema": [
+          "test_bookstore.xsd"
+        ]
+      }
+    },
+    "tns": {
+      "files": [
+        "test_bookstore.xsd"
+      ],
+      "is_target_namespace": [],
+      "prefixes": {
+        "http://example.com/bookstore": [
+          "test_bookstore.xsd"
+        ]
+      }
+    }
+  }
+}

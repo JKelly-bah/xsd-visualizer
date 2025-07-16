@@ -284,13 +284,15 @@ def main():
         epilog="""
 Examples:
   %(prog)s schema.xsd
-  %(prog)s schema.xsd --output-dir ./docs
+  %(prog)s schema1.xsd schema2.xsd schema3.xsd
+  %(prog)s *.xsd --output-dir ./docs
+  %(prog)s schema1.xsd schema2.xsd --combined
   %(prog)s schema.xsd --formats html json
   %(prog)s schema.xsd --summary-only
         """
     )
     
-    parser.add_argument('xsd_file', help='Path to XSD file to analyze')
+    parser.add_argument('xsd_files', nargs='+', help='Path(s) to XSD file(s) to analyze')
     parser.add_argument(
         '--output-dir', '-o', 
         default='./output',
@@ -314,6 +316,11 @@ Examples:
         help='Enable multi-file parsing for schemas with imports/includes'
     )
     parser.add_argument(
+        '--combined', '-c',
+        action='store_true',
+        help='Combine multiple XSD files into a single analysis output'
+    )
+    parser.add_argument(
         '--verbose', '-v',
         action='store_true',
         help='Enable verbose logging'
@@ -325,13 +332,43 @@ Examples:
         logging.getLogger().setLevel(logging.DEBUG)
     
     try:
-        analyzer = XSDAnalyzer(args.xsd_file, args.output_dir, multi_file=args.multi_file)
-        
-        if args.summary_only:
-            analyzer.analyze()
-            analyzer.display_summary_table()
+        if len(args.xsd_files) > 1 and args.combined:
+            # Process all files together as a combined analysis
+            console.print(f"[bold blue]Processing {len(args.xsd_files)} XSD files as combined analysis[/bold blue]")
+            
+            # For combined analysis, we'll use the multi-file parser on the first file
+            # and let it discover the others through imports/includes
+            analyzer = XSDAnalyzer(args.xsd_files[0], args.output_dir, multi_file=True)
+            
+            if args.summary_only:
+                analyzer.analyze()
+                analyzer.display_summary_table()
+            else:
+                analyzer.run_complete_analysis(args.formats)
+                
         else:
-            analyzer.run_complete_analysis(args.formats)
+            # Process each XSD file separately
+            for i, xsd_file in enumerate(args.xsd_files):
+                if len(args.xsd_files) > 1:
+                    console.print(f"\n[bold blue]Processing file {i+1}/{len(args.xsd_files)}:[/bold blue] {xsd_file}")
+                
+                # Create output directory for each file if multiple files
+                if len(args.xsd_files) > 1 and not args.combined:
+                    file_output_dir = Path(args.output_dir) / Path(xsd_file).stem
+                else:
+                    file_output_dir = args.output_dir
+                    
+                analyzer = XSDAnalyzer(xsd_file, str(file_output_dir), multi_file=args.multi_file)
+                
+                if args.summary_only:
+                    analyzer.analyze()
+                    analyzer.display_summary_table()
+                else:
+                    analyzer.run_complete_analysis(args.formats)
+                    
+        if len(args.xsd_files) > 1:
+            console.print(f"\n[bold green]✓ Successfully processed {len(args.xsd_files)} XSD files[/bold green]")
+            console.print(f"[dim]Output written to: {args.output_dir}[/dim]")
             
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")

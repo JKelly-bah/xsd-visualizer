@@ -171,27 +171,49 @@ Examples:
   %(prog)s file1.xsd --elements BookType,AuthorType
   
   # Select from multiple files
-  %(prog)s file1.xsd --elements Book file2.xsd --complex-types PersonType
+  %(prog)s file1.xsd file2.xsd --elements Book,Person
   
-  # Select entire namespaces
-  %(prog)s schema.xsd --namespaces "http://example.com/library"
+  # Select entire namespaces from multiple files
+  %(prog)s schema1.xsd schema2.xsd --namespaces "http://example.com/library"
   
   # Complex selection with HTML output
-  %(prog)s main.xsd --elements Library --complex-types BookType \\
-           other.xsd --namespaces "http://example.com/common" \\
+  %(prog)s main.xsd other.xsd --elements Library,Book \\
+           --complex-types BookType,PersonType \\
            --output-dir ./selected --formats html
         """
     )
     
     parser.add_argument(
-        'selections',
+        'xsd_files',
         nargs='+',
-        help='XSD files and their selections (file.xsd --elements el1,el2 --types type1,type2)'
+        help='XSD file(s) to analyze'
     )
     parser.add_argument(
         '--output-dir', '-o',
         default='./output',
         help='Output directory (default: ./output)'
+    )
+    parser.add_argument(
+        '--elements', '-e',
+        help='Comma-separated list of element names to include'
+    )
+    parser.add_argument(
+        '--complex-types', '-c',
+        help='Comma-separated list of complex type names to include'
+    )
+    parser.add_argument(
+        '--simple-types', '-s',
+        help='Comma-separated list of simple type names to include'
+    )
+    parser.add_argument(
+        '--namespaces', '-n',
+        help='Comma-separated list of namespaces to include (use "*" for all)'
+    )
+    parser.add_argument(
+        '--include-dependencies', '-d',
+        action='store_true',
+        default=True,
+        help='Include dependencies of selected components (default: True)'
     )
     parser.add_argument(
         '--formats', '-f',
@@ -221,11 +243,28 @@ Examples:
     try:
         analyzer = SelectiveAnalyzer(args.output_dir)
         
-        # For now, just analyze the first file completely as a demo
-        if args.selections:
-            first_file = args.selections[0]
-            console.print(f"[yellow]Demo: Analyzing all components from {first_file}[/yellow]")
-            analyzer.add_file_selection(first_file, namespaces=["*"])  # Select all
+        # Parse selection criteria from command line
+        elements = parse_component_list(args.elements) if args.elements else None
+        complex_types = parse_component_list(args.complex_types) if args.complex_types else None
+        simple_types = parse_component_list(args.simple_types) if args.simple_types else None
+        namespaces = parse_component_list(args.namespaces) if args.namespaces else None
+        
+        if len(args.xsd_files) > 1:
+            console.print(f"[bold blue]Processing {len(args.xsd_files)} XSD files with selective analysis[/bold blue]")
+        
+        # Add each file with the same selection criteria
+        for i, xsd_file in enumerate(args.xsd_files):
+            if len(args.xsd_files) > 1:
+                console.print(f"[dim]Adding file {i+1}/{len(args.xsd_files)}:[/dim] {xsd_file}")
+            
+            analyzer.add_file_selection(
+                file_path=xsd_file,
+                elements=elements,
+                complex_types=complex_types,
+                simple_types=simple_types,
+                namespaces=namespaces,
+                include_dependencies=args.include_dependencies
+            )
         
         # Perform analysis
         analyzer.analyze()
@@ -239,6 +278,10 @@ Examples:
         
         if 'json' in args.formats:
             analyzer.export_json()
+            
+        if len(args.xsd_files) > 1:
+            console.print(f"\n[bold green]✓ Successfully processed {len(args.xsd_files)} XSD files[/bold green]")
+            console.print(f"[dim]Output written to: {args.output_dir}[/dim]")
             
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")

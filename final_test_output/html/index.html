@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XSD Documentation - test_bookstore.xsd</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <header>
+        <h1>XSD Schema Documentation</h1>
+        <p class="schema-info">test_bookstore.xsd</p>
+        
+        <p class="namespace">Target Namespace: <code>http://example.com/bookstore</code></p>
+        
+    </header>
+
+    <nav class="main-nav">
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#elements">Elements</a></li>
+            <li><a href="#types">Types</a></li>
+            <li><a href="#dependencies">Dependencies</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview" class="overview">
+            <h2>Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>9</h3>
+                    <p>Total Elements</p>
+                </div>
+                <div class="stat-card">
+                    <h3>3</h3>
+                    <p>Complex Types</p>
+                </div>
+                <div class="stat-card">
+                    <h3>2</h3>
+                    <p>Simple Types</p>
+                </div>
+                <div class="stat-card">
+                    <h3>1</h3>
+                    <p>Max Depth</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="elements" class="elements">
+            <h2>Root Elements</h2>
+            
+            <div class="element-grid">
+                
+                <div class="element-card">
+                    <h3><a href="elements/bookstore.html">bookstore</a></h3>
+                    
+                    <p class="element-type">Type: <a href="elements/BookstoreType.html">tns:BookstoreType</a></p>
+                    
+                    <p class="occurs">required</p>
+                    
+                    <div class="documentation"><p>Root element representing a bookstore</p></div>
+                    
+                </div>
+                
+                <div class="element-card">
+                    <h3><a href="elements/author.html">author</a></h3>
+                    
+                    <p class="element-type">Type: <a href="elements/AuthorType.html">tns:AuthorType</a></p>
+                    
+                    <p class="occurs">required</p>
+                    
+                    <div class="documentation"><p>Standalone author element</p></div>
+                    
+                </div>
+                
+                <div class="element-card">
+                    <h3><a href="elements/book.html">book</a></h3>
+                    
+                    <p class="element-type">Type: <a href="elements/BookType.html">tns:BookType</a></p>
+                    
+                    <p class="occurs">required</p>
+                    
+                    <div class="documentation"><p>Standalone book element</p></div>
+                    
+                </div>
+                
+            </div>
+            
+
+            <h2>Global Elements</h2>
+            
+            <div class="element-grid">
+                
+                <div class="element-card">
+                    <h3><a href="elements/bookstore.html">bookstore</a></h3>
+                    
+                    <p class="element-type">Type: <a href="elements/BookstoreType.html">tns:BookstoreType</a></p>
+                    
+                    <p class="occurs">required</p>
+                    
+                    <div class="documentation"><p>Root element representing a bookstore</p></div>
+                    
+                </div>
+                
+                <div class="element-card">
+                    <h3><a href="elements/author.html">author</a></h3>
+                    
+                    <p class="element-type">Type: <a href="elements/AuthorType.html">tns:AuthorType</a></p>
+                    
+                    <p class="occurs">required</p>
+                    
+                    <div class="documentation"><p>Standalone author element</p></div>
+                    
+                </div>
+                
+                <div class="element-card">
+                    <h3><a href="elements/book.html">book</a></h3>
+                    
+                    <p class="element-type">Type: <a href="elements/BookType.html">tns:BookType</a></p>
+                    
+                    <p class="occurs">required</p>
+                    
+                    <div class="documentation"><p>Standalone book element</p></div>
+                    
+                </div>
+                
+            </div>
+            
+        </section>
+
+        <section id="types" class="types">
+            <h2>Complex Types</h2>
+            
+            <div class="type-grid">
+                
+                <div class="type-card">
+                    <h3><a href="types/AuthorType.html">AuthorType</a></h3>
+                    <p class="element-count">4 elements</p>
+                    <p class="attribute-count">1 attributes</p>
+                    
+                    <div class="documentation"><p>Author information</p></div>
+                    
+                </div>
+                
+                <div class="type-card">
+                    <h3><a href="types/BookType.html">BookType</a></h3>
+                    <p class="element-count">8 elements</p>
+                    <p class="attribute-count">2 attributes</p>
+                    
+                    <div class="documentation"><p>Book information</p></div>
+                    
+                </div>
+                
+                <div class="type-card">
+                    <h3><a href="types/BookstoreType.html">BookstoreType</a></h3>
+                    <p class="element-count">3 elements</p>
+                    <p class="attribute-count">2 attributes</p>
+                    
+                    <div class="documentation"><p>Main bookstore container</p></div>
+                    
+                </div>
+                
+            </div>
+            
+
+            <h2>Simple Types</h2>
+            
+            <div class="type-grid">
+                
+                <div class="type-card simple-type">
+                    <h3><a href="types/ISBNType.html">ISBNType</a></h3>
+                    
+                    <p class="base-type">Base: xs:string</p>
+                    
+                    
+                    
+                    <div class="documentation"><p>ISBN number format</p></div>
+                    
+                </div>
+                
+                <div class="type-card simple-type">
+                    <h3><a href="types/CategoryType.html">CategoryType</a></h3>
+                    
+                    <p class="base-type">Base: xs:string</p>
+                    
+                    
+                    <p class="enum-count">6 values</p>
+                    
+                    
+                    <div class="documentation"><p>Book categories</p></div>
+                    
+                </div>
+                
+            </div>
+            
+        </section>
+
+        <section id="dependencies" class="dependencies">
+            <h2>Dependencies</h2>
+            <p><a href="dependencies.html">View Dependency Diagram</a></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Generated by XSD Visualization Tools</p>
+    </footer>
+
+    <script src="static/script.js"></script>
+</body>
+</html>
