@@ -28,7 +28,8 @@ The XSD Visualization Toolkit follows a **modular, pipeline-based architecture**
 │                 │    │                  │    │                 │
 │ • Single files  │    │ • XSDParser      │    │ • Structure     │
 │ • Multi-file    │    │ • MultiFileXSD   │    │ • Dependencies  │
-│ • Selective     │    │ • SelectiveXSD   │    │ • Statistics    │
+│ • Selective     │    │ • SelectiveXSD   │    │ • Relationships │
+│ • Cross-schema  │    │ • RelationshipA  │    │ • Statistics    │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
                                  │
                                  ▼
@@ -38,6 +39,8 @@ The XSD Visualization Toolkit follows a **modular, pipeline-based architecture**
 │ • HTML docs     │    │ • HTMLGenerator  │    │ • Elements      │
 │ • Tree views    │    │ • TreeVisualizer │    │ • Types         │
 │ • JSON export   │    │ • JSONExporter   │    │ • Namespaces    │
+│ • Relationship  │    │ • RelationshipR  │    │ • File Links    │
+│   reports       │    │   eporter        │    │ • Dependencies  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
@@ -165,6 +168,50 @@ class SelectionCriteria:
     include_dependencies: bool = True
 ```
 
+#### `relationship_analyzer.py` - Multi-File Relationship Analyzer (NEW! 🔗)
+**Purpose**: Analyze and explain relationships between multiple XSD files
+**Key Features**:
+- **File Relationship Mapping**: Detect imports, includes, and redefines between files
+- **Component Dependency Analysis**: Track type dependencies across schema boundaries  
+- **Namespace Cross-Reference**: Map namespace usage and definitions across files
+- **Relationship Reporting**: Generate comprehensive JSON and text reports
+
+**Core Data Structures**:
+```python
+@dataclass
+class FileRelationship:
+    source_file: str
+    target_file: str
+    relationship_type: str  # 'import', 'include', 'redefine'
+    namespace: Optional[str] = None
+    schema_location: Optional[str] = None
+
+@dataclass  
+class ComponentDependency:
+    source_component: str
+    target_component: str
+    source_file: str
+    target_file: str
+    dependency_type: str  # 'type_reference', 'element_reference', 'group_reference'
+    namespace: Optional[str] = None
+```
+
+**Analysis Capabilities**:
+```python
+class RelationshipAnalyzer:
+    def analyze_file_relationships(self) -> List[FileRelationship]:
+        """Detect import/include/redefine relationships between files"""
+        
+    def analyze_component_dependencies(self) -> List[ComponentDependency]:
+        """Track type and element dependencies across files"""
+        
+    def analyze_namespace_usage(self) -> Dict[str, Dict[str, Any]]:
+        """Map namespace definitions and usage across schema set"""
+        
+    def generate_relationship_report(self) -> Dict[str, Any]:
+        """Create comprehensive relationship analysis report"""
+```
+
 ### Output Generators (`utils/`)
 
 #### `html_generator.py` - HTML Documentation Generator
@@ -184,13 +231,105 @@ templates/
 └── script.js          # Interactive features
 ```
 
-#### `tree_visualizer.py` - Tree Structure Visualizer
-**Purpose**: Generate hierarchical views of schema structure
+#### `tree_visualizer.py` - Tree Structure Visualizer (Enhanced for Multi-File)
+**Purpose**: Generate hierarchical views of schema structure  
+**Multi-File Capabilities** (NEW):
+- **Multiple File Processing**: Accept and process multiple XSD files with `nargs='+'`
+- **Combined Visualization**: Merge multiple schemas into single tree with `--combined` flag
+- **Automatic File Numbering**: Generate separate outputs with `_1, _2` suffixes for multiple files
+- **Cross-Schema Navigation**: Navigate relationships between different schema files
+
 **Output Formats**:
 - **Console**: Rich-formatted terminal display
-- **Text**: Plain text for documentation
+- **Text**: Plain text for documentation  
 - **DOT**: Graphviz input format
 - **SVG**: Vector graphics for presentations
+
+**Usage Examples**:
+```bash
+# Single file (traditional)
+python tree_visualizer.py schema.xsd --format console
+
+# Multiple files separately  
+python tree_visualizer.py file1.xsd file2.xsd file3.xsd --format svg
+
+# Combined multi-file visualization
+python tree_visualizer.py *.xsd --combined --format svg --output combined_tree.svg
+```
+
+### Command-Line Interface Tools
+
+#### `xsd_analyzer.py` - Main Analysis Tool (Enhanced for Multi-File)
+**Purpose**: Comprehensive XSD schema analysis and documentation generation
+**Multi-File Enhancements** (NEW):
+- **Multiple File Input**: Process multiple XSD files with automatic file detection
+- **Combined Analysis Mode**: Use `--combined` flag to merge multiple schemas  
+- **Cross-File Dependency Tracking**: Detect and report dependencies across files
+- **Unified Output Generation**: Create combined documentation from multiple sources
+
+**Core Features**:
+```python
+# Single file analysis (traditional)
+python xsd_analyzer.py schema.xsd --formats html json
+
+# Multi-file analysis with separate outputs
+python xsd_analyzer.py file1.xsd file2.xsd file3.xsd --formats html
+
+# Combined multi-file analysis  
+python xsd_analyzer.py *.xsd --combined --formats html json --output-dir ./docs
+```
+
+#### `selective_analyzer.py` - Selective Component Analyzer (Enhanced for Multi-File)
+**Purpose**: Cherry-pick specific components from one or more XSD files
+**Multi-File Capabilities** (NEW):
+- **Cross-File Selection**: Select components from different files in single operation
+- **Namespace-Based Selection**: Select all components from specific namespaces across files
+- **Dependency Resolution**: Automatically include dependencies from other files
+- **Mixed Selection Strategies**: Combine element, type, and namespace selections
+
+**Advanced Usage**:
+```python
+# Select elements from multiple files
+python selective_analyzer.py file1.xsd --elements Book,Author file2.xsd --complex-types PersonType
+
+# Namespace-based selection across files
+python selective_analyzer.py *.xsd --namespaces "http://example.com/common,http://example.com/library"
+
+# Python API for complex selections
+from utils.selective_xsd_parser import SelectiveXSDParser
+parser = SelectiveXSDParser()
+parser.add_file_selection("schema1.xsd", elements=["Customer", "Order"])
+parser.add_file_selection("schema2.xsd", namespaces=["http://example.com/types"])
+result = parser.parse_selections()
+```
+
+#### `relationship_analyzer.py` - Multi-File Relationship Analyzer (NEW! 🔗)
+**Purpose**: Analyze and explain relationships between multiple XSD files
+**Core Functionality**:
+- **File Relationship Detection**: Identify import, include, and redefine relationships
+- **Component Dependency Mapping**: Track type and element dependencies across schemas
+- **Namespace Analysis**: Map namespace definitions and usage patterns
+- **Comprehensive Reporting**: Generate detailed JSON and text reports
+
+**Analysis Output**:
+```python
+# Basic relationship analysis
+python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
+
+# Generate detailed reports
+python relationship_analyzer.py test_multifile/*.xsd --output-dir ./reports
+
+# Console-only analysis
+python relationship_analyzer.py *.xsd --report-only
+
+# Analysis results include:
+{
+    "file_relationships": [...],    # Import/include/redefine mappings  
+    "component_dependencies": [...], # Cross-file type dependencies
+    "namespace_analysis": {...},    # Namespace usage patterns
+    "summary": {...}                # High-level statistics
+}
+```
 
 #### `element_inspector.py` - Interactive Element Inspector
 **Purpose**: Command-line tool for exploring schema components
@@ -259,6 +398,10 @@ parser = MultiFileXSDParser('main.xsd')
 # Selective strategy
 parser = SelectiveXSDParser()
 parser.add_file_selection('file1.xsd', elements=['Book'])
+
+# Relationship analysis strategy (NEW)
+analyzer = RelationshipAnalyzer(['schema1.xsd', 'schema2.xsd', 'schema3.xsd'])
+relationships = analyzer.analyze_all_relationships()
 ```
 
 ### 2. **Factory Pattern** - Output Generation
@@ -268,9 +411,19 @@ def create_generator(format_type: str, structure: dict):
     generators = {
         'html': HTMLGenerator,
         'json': JSONExporter,
-        'tree': TreeVisualizer
+        'tree': TreeVisualizer,
+        'relationship': RelationshipReporter  # NEW
     }
     return generators[format_type](structure)
+
+# Multi-file aware factory
+def create_multi_file_analyzer(files: List[str], analysis_type: str):
+    analyzers = {
+        'comprehensive': MultiFileXSDParser,
+        'selective': SelectiveXSDParser, 
+        'relationship': RelationshipAnalyzer  # NEW
+    }
+    return analyzers[analysis_type](files)
 ```
 
 ### 3. **Observer Pattern** - Progress Tracking
@@ -390,16 +543,28 @@ class PluginManager:
 ```
 tests/
 ├── test_xsd_parser.py           # Core parser functionality
-├── test_multifile_parser.py     # Multi-file parsing
-├── test_selective_parser.py     # Selective parsing
+├── test_multifile_parser.py     # Multi-file parsing (Enhanced)
+├── test_selective_parser.py     # Selective parsing (Enhanced)
+├── test_relationship_analyzer.py # Multi-file relationship analysis (NEW)
 ├── test_html_generator.py       # HTML output generation
-├── test_tree_visualizer.py      # Tree visualization
+├── test_tree_visualizer.py      # Tree visualization (Enhanced for multi-file)
+├── test_cli_integration.py      # Command-line interface tests (NEW)
 ├── fixtures/                    # Test XSD files
 │   ├── simple_schema.xsd
 │   ├── complex_schema.xsd
-│   └── multi_file/
+│   ├── multi_file/              # Multi-file test schemas (Enhanced)
+│   │   ├── main.xsd             # Schema with imports/includes
+│   │   ├── imported.xsd         # Imported schema
+│   │   ├── included.xsd         # Included schema
+│   │   └── circular/            # Circular reference test cases
+│   └── relationship_test_set/   # Relationship analysis test data (NEW)
+│       ├── schema_a.xsd
+│       ├── schema_b.xsd
+│       └── schema_c.xsd
 └── integration/                 # End-to-end tests
-    └── test_full_pipeline.py
+    ├── test_full_pipeline.py
+    ├── test_multi_file_workflow.py    # Multi-file integration tests (NEW)
+    └── test_relationship_workflow.py  # Relationship analysis workflow (NEW)
 ```
 
 ### Test Data Management
@@ -436,6 +601,86 @@ def test_large_schema_performance():
     # Assert parsing completes within reasonable time
     assert end_time - start_time < 30.0  # 30 seconds max
     assert len(structure['elements']) > 100
+```
+
+### Multi-File Relationship Testing (NEW)
+```python
+import pytest
+from utils.relationship_analyzer import RelationshipAnalyzer
+
+def test_file_relationship_detection():
+    """Test detection of import/include relationships between files"""
+    analyzer = RelationshipAnalyzer([
+        'fixtures/multi_file/main.xsd',
+        'fixtures/multi_file/imported.xsd', 
+        'fixtures/multi_file/included.xsd'
+    ])
+    
+    relationships = analyzer.analyze_file_relationships()
+    
+    # Verify import relationship detected
+    import_rels = [r for r in relationships if r.relationship_type == 'import']
+    assert len(import_rels) > 0
+    assert any(r.target_file.endswith('imported.xsd') for r in import_rels)
+    
+    # Verify include relationship detected  
+    include_rels = [r for r in relationships if r.relationship_type == 'include']
+    assert len(include_rels) > 0
+    assert any(r.target_file.endswith('included.xsd') for r in include_rels)
+
+def test_component_dependency_analysis():
+    """Test cross-file component dependency detection"""
+    analyzer = RelationshipAnalyzer([
+        'fixtures/relationship_test_set/schema_a.xsd',
+        'fixtures/relationship_test_set/schema_b.xsd'
+    ])
+    
+    dependencies = analyzer.analyze_component_dependencies()
+    
+    # Verify cross-file type dependencies detected
+    cross_file_deps = [d for d in dependencies if d.source_file != d.target_file]
+    assert len(cross_file_deps) > 0
+    
+    # Verify dependency types are properly classified
+    type_refs = [d for d in dependencies if d.dependency_type == 'type_reference']
+    element_refs = [d for d in dependencies if d.dependency_type == 'element_reference']
+    assert len(type_refs) + len(element_refs) > 0
+
+def test_namespace_cross_reference():
+    """Test namespace usage analysis across multiple files"""
+    analyzer = RelationshipAnalyzer([
+        'fixtures/multi_file/main.xsd',
+        'fixtures/multi_file/imported.xsd'
+    ])
+    
+    namespace_analysis = analyzer.analyze_namespace_usage()
+    
+    # Verify namespace mapping detected
+    assert len(namespace_analysis) > 1  # Multiple namespaces
+    
+    # Check for target namespace definitions
+    for ns_uri, ns_data in namespace_analysis.items():
+        assert 'defined_in_files' in ns_data
+        assert 'used_in_files' in ns_data
+        assert 'components' in ns_data
+
+def test_relationship_report_generation():
+    """Test comprehensive relationship report generation"""
+    analyzer = RelationshipAnalyzer(['fixtures/multi_file/*.xsd'])
+    
+    report = analyzer.generate_relationship_report()
+    
+    # Verify report structure
+    assert 'file_relationships' in report
+    assert 'component_dependencies' in report  
+    assert 'namespace_analysis' in report
+    assert 'summary' in report
+    
+    # Verify summary statistics
+    summary = report['summary']
+    assert 'total_files' in summary
+    assert 'total_relationships' in summary
+    assert 'total_namespaces' in summary
 ```
 
 ## 🔧 Troubleshooting Development Issues
@@ -507,6 +752,104 @@ env = Environment(
 )
 ```
 
+#### 5. **Multi-File Import/Include Resolution Issues** (NEW)
+```python
+# Problem: Import/include files not found or incorrectly resolved
+# Solution: Implement robust path resolution with fallback strategies
+
+class FileResolver:
+    def __init__(self, base_path: str):
+        self.base_path = Path(base_path).parent
+        self.search_paths = [
+            self.base_path,                    # Same directory as main file
+            self.base_path / 'schemas',        # schemas subdirectory  
+            self.base_path / 'includes',       # includes subdirectory
+            Path.cwd()                         # Current working directory
+        ]
+    
+    def resolve_schema_location(self, schema_location: str) -> Optional[Path]:
+        """Try multiple paths to resolve schema location"""
+        for search_path in self.search_paths:
+            candidate = search_path / schema_location
+            if candidate.exists():
+                return candidate
+        
+        # Log warning for debugging
+        logger.warning(f"Could not resolve schema location: {schema_location}")
+        return None
+
+# Usage in parser
+resolver = FileResolver(main_xsd_file)
+resolved_path = resolver.resolve_schema_location(import_location)
+if resolved_path:
+    import_parser = XSDParser(str(resolved_path))
+```
+
+#### 6. **Circular Import Detection in Multi-File Schemas** (NEW)
+```python
+# Problem: Infinite recursion when schemas have circular imports
+# Solution: Track import chain to detect cycles
+
+class ImportChainTracker:
+    def __init__(self):
+        self.current_chain = []
+        self.all_chains = set()
+    
+    def enter_file(self, file_path: str) -> bool:
+        """Returns False if circular import detected"""
+        abs_path = str(Path(file_path).resolve())
+        
+        if abs_path in self.current_chain:
+            chain_str = " -> ".join(self.current_chain + [abs_path])
+            raise CircularImportError(f"Circular import detected: {chain_str}")
+        
+        self.current_chain.append(abs_path)
+        return True
+    
+    def exit_file(self, file_path: str):
+        abs_path = str(Path(file_path).resolve())
+        if abs_path in self.current_chain:
+            self.current_chain.remove(abs_path)
+
+# Usage in multi-file parser
+tracker = ImportChainTracker()
+try:
+    tracker.enter_file(import_file)
+    # Process imported file
+finally:
+    tracker.exit_file(import_file)
+```
+
+#### 7. **Namespace Collision Resolution** (NEW)
+```python
+# Problem: Multiple files define the same namespace with conflicting components
+# Solution: Implement namespace collision detection and resolution
+
+class NamespaceCollisionDetector:
+    def __init__(self):
+        self.namespace_definitions = {}  # namespace -> {file: components}
+    
+    def register_namespace_definition(self, namespace: str, file_path: str, components: List[str]):
+        if namespace not in self.namespace_definitions:
+            self.namespace_definitions[namespace] = {}
+        
+        # Check for component collisions
+        for other_file, other_components in self.namespace_definitions[namespace].items():
+            if other_file != file_path:
+                collisions = set(components) & set(other_components)
+                if collisions:
+                    logger.warning(f"Namespace collision in {namespace}: {collisions} "
+                                 f"defined in both {file_path} and {other_file}")
+        
+        self.namespace_definitions[namespace][file_path] = components
+
+# Usage
+detector = NamespaceCollisionDetector()
+for file_path, parsed_data in file_data.items():
+    for namespace, components in parsed_data['namespaces'].items():
+        detector.register_namespace_definition(namespace, file_path, components)
+```
+
 ### Debugging Tools
 
 #### 1. **Parser Debug Mode**
@@ -546,22 +889,34 @@ def profile_parsing():
     stats.print_stats(10)  # Top 10 functions
 ```
 
-## 🚀 Future Enhancement Ideas
+## 🚀 Enhancement Status & Future Ideas
 
-### Planned Features
-1. **Web Interface**: Browser-based schema explorer
-2. **REST API**: HTTP API for remote schema analysis
-3. **Database Integration**: Store and query schema metadata
-4. **Version Comparison**: Diff schemas across versions
-5. **Schema Validation**: Validate instances against schemas
-6. **Code Generation**: Generate classes from XSD definitions
+### ✅ Recently Implemented (NEW!)
+1. **Multi-File Schema Support**: ✅ Handle imports, includes, and redefines across multiple XSD files
+2. **Selective Component Analysis**: ✅ Cherry-pick specific components from multiple files  
+3. **Cross-Schema Relationship Analysis**: ✅ Analyze and visualize relationships between XSD files
+4. **Enhanced Command-Line Tools**: ✅ All main tools now support multiple file inputs
+5. **Comprehensive Dependency Tracking**: ✅ Track dependencies across file boundaries
+6. **Advanced Namespace Management**: ✅ Handle complex namespace scenarios across files
 
-### Architecture Improvements
-1. **Async Processing**: Non-blocking operations for large files
-2. **Distributed Processing**: Process schemas across multiple machines
-3. **Plugin System**: Third-party extension support
-4. **Configuration Management**: YAML/JSON configuration files
-5. **Caching Layer**: Redis/Memcached for parsed schemas
+### 🎯 Planned Features
+1. **Web Interface**: Browser-based schema explorer with multi-file navigation
+2. **REST API**: HTTP API for remote schema analysis and relationship queries
+3. **Database Integration**: Store and query schema metadata with relationship indexing
+4. **Version Comparison**: Diff schemas across versions with relationship change tracking
+5. **Schema Validation**: Validate instances against multi-file schema sets
+6. **Code Generation**: Generate classes from XSD definitions with cross-file imports
+7. **Interactive Relationship Explorer**: Visual graph-based relationship navigation
+8. **Schema Optimization Suggestions**: Recommend improvements based on relationship analysis
+
+### 🏗️ Architecture Improvements
+1. **Async Processing**: Non-blocking operations for large multi-file schema sets
+2. **Distributed Processing**: Process complex schema hierarchies across multiple machines
+3. **Enhanced Plugin System**: Third-party extensions for custom relationship analysis
+4. **Advanced Configuration Management**: YAML/JSON configuration for multi-file processing rules
+5. **Intelligent Caching Layer**: Redis/Memcached for parsed schemas with relationship caching
+6. **Performance Optimization**: Parallel processing for independent schema files
+7. **Memory Management**: Streaming support for massive multi-file schema sets
 
 ---
 

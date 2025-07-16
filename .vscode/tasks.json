@@ -90,12 +90,121 @@
 				"cwd": "${workspaceFolder}"
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "Analyze Multiple XSD Files",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/xsd_analyzer.py",
+				"${input:xsdFiles}",
+				"--output-dir",
+				"${workspaceFolder}/output"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Analyze Multiple XSD Files (Combined)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/xsd_analyzer.py",
+				"${input:xsdFiles}",
+				"--combined",
+				"--output-dir",
+				"${workspaceFolder}/output"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Visualize Tree (Multiple Files)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/tree_visualizer.py",
+				"${input:xsdFiles}",
+				"--format",
+				"console"
+			],
+			"group": "test",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		},
+		{
+			"label": "Selective Analysis (Multiple Files)",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/selective_analyzer.py",
+				"${input:xsdFiles}",
+				"--elements",
+				"${input:elements}",
+				"--formats",
+				"summary"
+			],
+			"group": "test",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		},
+		{
+			"label": "Analyze Relationships",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/relationship_analyzer.py",
+				"${input:xsdFiles}",
+				"--output-dir",
+				"${workspaceFolder}/output"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
 		{
 			"id": "xsdFile",
 			"description": "XSD file to analyze",
+			"type": "promptString"
+		},
+		{
+			"id": "xsdFiles",
+			"description": "XSD files to analyze (space-separated)",
+			"type": "promptString"
+		},
+		{
+			"id": "elements",
+			"description": "Element names to select (comma-separated)",
 			"type": "promptString"
 		}
 	]
