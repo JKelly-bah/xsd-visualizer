@@ -1,0 +1,9 @@
+id,xpath,description,level1,level2,level3,level4,level5,level6,level7,level8,attribute,expected_type,required,validation_rules,business_purpose
+1,"bookstore/@id","Bookstore identifier",bookstore,,,,,,,,,id,string,true,"pattern: ^[A-Z]{3}[0-9]{4}$","Unique bookstore identification code"
+2,"bookstore/book/@isbn","Book ISBN attribute",bookstore,book,,,,,,,isbn,string,true,"pattern: ^[0-9]{13}$","International Standard Book Number"
+3,"bookstore/book/title","Book title element",bookstore,book,title,,,,,,,string,true,"maxLength: 255","Primary book identifier for display"
+4,"bookstore/book/author","Book author element",bookstore,book,author,,,,,,,tns:AuthorType,false,"maxLength: 100","Author name information"
+5,"bookstore/book/price/@currency","Price currency attribute",bookstore,book,price,,,,,currency,string,true,"enum: USD,EUR,GBP","Currency for price display"
+6,"library/books/book/author/name","Deep author name path",library,books,book,author,name,,,,,string,false,,"Full author name in library system"
+7,"orders/order/items/item/product/details/@weight","Product weight attribute",orders,order,items,item,product,details,,weight,decimal,false,"min: 0, max: 999.99","Product weight in kilograms"
+8,"catalog/categories/category/subcategory/items/item/specs/@model","Deep product model",catalog,categories,category,subcategory,items,item,specs,model,string,false,"maxLength: 50","Product model specification"

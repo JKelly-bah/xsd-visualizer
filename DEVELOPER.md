@@ -231,6 +231,52 @@ templates/
 └── script.js          # Interactive features
 ```
 
+#### `csv_schema_analyzer.py` - CSV Requirements Validator (NEW! 📊)
+**Purpose**: Validate XSD files against CSV-defined business requirements with dynamic depth structure
+**Key Features**:
+- **Dynamic Path Structure**: 8-level depth columns (level1-level8) for flexible requirement definition
+- **Multi-File XSD Support**: Validate against multiple related/unrelated XSD files
+- **Complex Type Resolution**: Automatically resolve tns:ComplexType references to find nested elements
+- **Attribute vs Element Analysis**: Distinguish between element paths and attribute paths using @attr syntax
+- **Business-Friendly Interface**: CSV format accessible to non-technical stakeholders
+
+**Core Data Structures**:
+```python
+@dataclass
+class SchemaRequirement:
+    id: str
+    xpath: str
+    description: str
+    levels: List[str]  # Dynamic depth structure from level1-level8
+    attribute: Optional[str] = None
+    expected_type: Optional[str] = None
+    required: bool = False
+    validation_rules: Optional[str] = None
+    business_purpose: Optional[str] = None
+
+@dataclass
+class AnalysisResult:
+    requirement: SchemaRequirement
+    status: str  # 'found', 'missing', 'mismatch', 'error'
+    found_in_file: Optional[str] = None
+    found_path: Optional[str] = None
+    actual_type: Optional[str] = None
+    actual_required: Optional[bool] = None
+    issues: List[str] = field(default_factory=list)
+```
+
+**CSV Format Structure**:
+```csv
+id,xpath,description,level1,level2,level3,level4,level5,level6,level7,level8,attribute,expected_type,required,validation_rules,business_purpose
+1,"bookstore/storeName","Store name",bookstore,storeName,,,,,,,xs:string,true,"maxLength: 100","Name of the bookstore"
+2,"orders/items/@id","Deep attribute",orders,items,,,,,,,id,string,true,"pattern: ^[A-Z]{3}$","Item ID"
+```
+
+**Analysis Output Categories**:
+- ✅ **FOUND**: Requirements perfectly matched in XSD with type validation
+- ⚠️ **MISMATCH**: Element found but with type or requirement differences
+- ❌ **MISSING**: Element not found in any XSD file with helpful suggestions
+
 #### `tree_visualizer.py` - Tree Structure Visualizer (Enhanced for Multi-File)
 **Purpose**: Generate hierarchical views of schema structure  
 **Multi-File Capabilities** (NEW):
@@ -278,6 +324,33 @@ python xsd_analyzer.py file1.xsd file2.xsd file3.xsd --formats html
 # Combined multi-file analysis  
 python xsd_analyzer.py *.xsd --combined --formats html json --output-dir ./docs
 ```
+
+#### `csv_schema_analyzer.py` - CSV Requirements Validator (NEW! 📊)
+**Purpose**: Business-friendly validation of XSD files against CSV-defined requirements
+**Technical Architecture**:
+- **Dynamic CSV Parser**: Handles 1-8 level depth structure with flexible column mapping
+- **Type Resolution Engine**: Automatically resolves complex type hierarchies to find nested elements  
+- **Multi-File Schema Support**: Validates requirements against multiple related/unrelated XSD files
+- **Rich Analysis Reporting**: Console, JSON, and text output with detailed mismatch analysis
+
+**Core Technical Features**:
+```python
+# Basic validation workflow
+python csv_schema_analyzer.py requirements.csv schema.xsd
+
+# Multi-file validation with comprehensive reporting
+python csv_schema_analyzer.py business_rules.csv file1.xsd file2.xsd file3.xsd --formats json text --output-dir ./validation
+
+# Advanced usage with verbose logging for development
+python csv_schema_analyzer.py requirements.csv *.xsd --verbose --formats console json
+```
+
+**Key Technical Implementation Details**:
+- **Path Resolution Algorithm**: Implements recursive type resolution to navigate complex schema hierarchies
+- **Attribute vs Element Detection**: Uses `@attribute` syntax parsing to distinguish between XML attributes and elements
+- **Dynamic Column Processing**: Supports variable-depth paths using level1-level8 columns with automatic null handling
+- **Type Comparison Engine**: Sophisticated type matching including namespace prefix handling (xs: vs tns:)
+- **Error Recovery**: Graceful handling of malformed CSV rows and missing XSD components
 
 #### `selective_analyzer.py` - Selective Component Analyzer (Enhanced for Multi-File)
 **Purpose**: Cherry-pick specific components from one or more XSD files
@@ -513,6 +586,33 @@ class PDFGenerator:
     def generate(self, output_path: str):
         # Implement PDF generation logic
         pass
+```
+
+### Custom Requirement Validators
+**Extending CSV Schema Analyzer**:
+```python
+class CustomRequirementValidator:
+    def __init__(self, requirement_source: str):
+        self.requirement_source = requirement_source
+    
+    def load_requirements(self) -> List[SchemaRequirement]:
+        # Load from Excel, JSON, database, etc.
+        pass
+    
+    def validate_custom_rules(self, element_data: Dict) -> List[str]:
+        # Implement business-specific validation logic
+        pass
+```
+
+**Adding New Analysis Categories**:
+```python
+# Extend AnalysisResult status types
+ANALYSIS_STATUSES = ['found', 'missing', 'mismatch', 'error', 'deprecated', 'custom_warning']
+
+class ExtendedAnalysisResult(AnalysisResult):
+    compliance_score: float = 0.0
+    business_impact: str = 'low'
+    remediation_suggestions: List[str] = field(default_factory=list)
 ```
 
 ### Template Customization

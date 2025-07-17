@@ -3,6 +3,7 @@
 A comprehensive offline toolkit for visualizing and analyzing large, complex XSD (XML Schema Definition) files. This workspace provides powerful tools for understanding schema structure, generating documentation, and creating visual representations without requiring any online services.
 
 **🆕 Latest Features:**
+- **CSV Schema Analyzer** - Validate XSD files against CSV-defined business requirements with dynamic depth structure
 - **Relationship Analyzer** - Analyze and explain relationships between multiple XSD files
 - **Multi-File Schema Support** - Handle imports, includes, and redefines across multiple XSD files
 - **Selective Analysis** - Cherry-pick specific elements, types, or namespaces from different files
@@ -13,6 +14,9 @@ A comprehensive offline toolkit for visualizing and analyzing large, complex XSD
 ```bash
 # Analyze any XSD file
 python xsd_analyzer.py your_schema.xsd --summary-only
+
+# Validate XSD against business requirements (NEW!)
+python csv_schema_analyzer.py requirements.csv schema.xsd --formats json
 
 # Multi-file schemas with imports/includes  
 python xsd_analyzer.py main_schema.xsd --multi-file --formats html
@@ -34,6 +38,9 @@ python element_inspector.py schema.xsd
 ```powershell
 # Analyze any XSD file
 python xsd_analyzer.py your_schema.xsd --summary-only
+
+# Validate XSD against business requirements (NEW!)
+python csv_schema_analyzer.py requirements.csv schema.xsd --formats json
 
 # Multi-file schemas with imports/includes  
 python xsd_analyzer.py main_schema.xsd --multi-file --formats html
@@ -189,6 +196,7 @@ XSD_Visualizations/
 │   ├── publisher.xsd            # Imported publisher schema
 │   └── common-types.xsd         # Included common types
 ├── xsd_analyzer.py               # Main analysis tool
+├── csv_schema_analyzer.py        # CSV requirements validator (NEW)
 ├── selective_analyzer.py         # Selective analysis tool (NEW)
 ├── relationship_analyzer.py      # Multi-file relationship analyzer (NEW)
 ├── tree_visualizer.py            # Tree structure visualization
@@ -196,6 +204,8 @@ XSD_Visualizations/
 ├── demo.py                       # Usage examples and help
 ├── demo_selective.py             # Selective analysis demo (NEW)
 ├── test_bookstore.xsd            # Sample XSD for testing
+├── sample_requirements.csv       # Sample CSV requirements file (NEW)
+├── demo_requirements.csv         # Demo CSV requirements file (NEW)
 ├── test_multifile_parser.py      # Multi-file parser tests (NEW)
 ├── requirements.txt              # Python dependencies
 └── .vscode/
@@ -549,6 +559,60 @@ python selective_analyzer.py schema.xsd --namespaces "http://example.com/library
 
 # Note: For complex selections, use the Python API (see demo_selective.py)
 ```
+
+### CSV Schema Analyzer - `csv_schema_analyzer.py` (NEW! 📊)
+
+**Validate XSD files against CSV-defined business requirements with dynamic depth structure (1-8 levels)**
+
+**Unix/macOS/Linux:**
+```bash
+# Basic usage
+python csv_schema_analyzer.py requirements.csv schema.xsd [more_schemas...] [options]
+
+# Options:
+--output-dir, -o DIR     Output directory (default: ./output)
+--formats, -f FORMAT     Output formats: console, json, text (default: console)
+--verbose, -v           Enable verbose logging
+
+# Examples:
+# Validate single XSD against CSV requirements
+python csv_schema_analyzer.py demo_requirements.csv test_bookstore.xsd
+
+# Validate multiple XSD files with JSON output
+python csv_schema_analyzer.py requirements.csv schema1.xsd schema2.xsd --formats json text
+
+# Generate comprehensive reports
+python csv_schema_analyzer.py business_rules.csv *.xsd --output-dir ./validation_reports
+```
+
+**Windows PowerShell:**
+```powershell
+# Basic usage
+python csv_schema_analyzer.py requirements.csv schema.xsd [more_schemas...] [options]
+
+# Examples:
+# Validate single XSD against CSV requirements
+python csv_schema_analyzer.py demo_requirements.csv test_bookstore.xsd
+
+# Validate multiple XSD files with JSON output
+python csv_schema_analyzer.py requirements.csv schema1.xsd schema2.xsd --formats json text
+
+# Generate comprehensive reports
+python csv_schema_analyzer.py business_rules.csv *.xsd --output-dir ./validation_reports
+```
+
+**CSV Format Structure (Dynamic Depth - 8 Levels):**
+```csv
+id,xpath,description,level1,level2,level3,level4,level5,level6,level7,level8,attribute,expected_type,required,validation_rules,business_purpose
+1,"bookstore/storeName","Store name",bookstore,storeName,,,,,,,xs:string,true,"maxLength: 100","Name of the bookstore"
+2,"bookstore/book/title","Book title",bookstore,book,title,,,,,,,xs:string,true,,"Book identifier"
+3,"orders/items/@id","Deep attribute",orders,items,,,,,,,id,string,true,"pattern: ^[A-Z]{3}$","Item ID"
+```
+
+**Analysis Results Categories:**
+- ✅ **FOUND**: Requirements perfectly matched in XSD
+- ⚠️ **MISMATCH**: Found but with type/requirement differences  
+- ❌ **MISSING**: Not found in any XSD file with suggestions
 
 ### Relationship Analyzer - `relationship_analyzer.py` (NEW! 🔗)
 

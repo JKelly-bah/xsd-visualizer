@@ -189,6 +189,29 @@
 				"cwd": "${workspaceFolder}"
 			},
 			"problemMatcher": []
+		},
+		{
+			"label": "CSV Schema Analysis",
+			"type": "shell",
+			"command": "${workspaceFolder}/.venv/bin/python",
+			"args": [
+				"${workspaceFolder}/csv_schema_analyzer.py",
+				"${input:csvFile}",
+				"${input:xsdFiles}",
+				"--output-dir",
+				"${workspaceFolder}/output/csv_analysis"
+			],
+			"group": "build",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
 		}
 	],
 	"inputs": [
@@ -200,6 +223,11 @@
 		{
 			"id": "xsdFiles",
 			"description": "XSD files to analyze (space-separated)",
+			"type": "promptString"
+		},
+		{
+			"id": "csvFile",
+			"description": "CSV file with schema requirements",
 			"type": "promptString"
 		},
 		{

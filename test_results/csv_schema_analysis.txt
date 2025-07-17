@@ -1,0 +1,62 @@
+CSV Schema Analysis Report
+==================================================
+
+XSD Files Analyzed: test_bookstore.xsd
+CSV Requirements File: sample_requirements.csv
+Total Requirements: 8
+
+Status Summary:
+--------------------
+MISMATCH: 3 (37.5%)
+MISSING: 5 (62.5%)
+
+MISMATCH REQUIREMENTS (3)
+----------------------------------------
+ID: 1
+Path: bookstore
+Description: Bookstore identifier
+Found in: test_bookstore.xsd
+Actual type: tns:BookstoreType
+Issues: Type mismatch: expected id, found tns:BookstoreType; Required mismatch: expected optional, found required
+
+ID: 3
+Path: bookstore/book/title
+Description: Book title element
+Found in: test_bookstore.xsd
+Actual type: xs:string
+Issues: Type mismatch: expected string, found xs:string
+
+ID: 4
+Path: bookstore/book/author
+Description: Book author element
+Found in: test_bookstore.xsd
+Actual type: tns:AuthorType
+Issues: Required mismatch: expected optional, found required
+
+MISSING REQUIREMENTS (5)
+----------------------------------------
+ID: 2
+Path: bookstore/book/@isbn
+Description: Book ISBN attribute
+Suggestions: Consider adding bookstore/book/@isbn to one of the XSD files; Suggested location: test_bookstore.xsd
+
+ID: 5
+Path: bookstore/book/price/@string
+Description: Price currency attribute
+Suggestions: Consider adding bookstore/book/price/@string to one of the XSD files; Suggested location: test_bookstore.xsd
+
+ID: 6
+Path: library/books/book/author/name
+Description: Deep author name path
+Suggestions: Consider adding library/books/book/author/name to one of the XSD files; Suggested location: test_bookstore.xsd
+
+ID: 7
+Path: orders/order/items/item/product/details/@decimal
+Description: Product weight attribute
+Suggestions: Consider adding orders/order/items/item/product/details/@decimal to one of the XSD files; Suggested location: test_bookstore.xsd
+
+ID: 8
+Path: catalog/categories/category/subcategory/items/item/specs/model/@string
+Description: Deep product model
+Suggestions: Consider adding catalog/categories/category/subcategory/items/item/specs/model/@string to one of the XSD files; Suggested location: test_bookstore.xsd
+

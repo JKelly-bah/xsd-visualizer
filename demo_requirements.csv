@@ -1,0 +1,7 @@
+id,xpath,description,level1,level2,level3,level4,level5,level6,level7,level8,attribute,expected_type,required,validation_rules,business_purpose
+1,"bookstore/storeName","Store name element",bookstore,storeName,,,,,,,xs:string,true,"maxLength: 100","Name of the bookstore"
+2,"bookstore/book/title","Book title element",bookstore,book,title,,,,,,,xs:string,true,"maxLength: 255","Primary book identifier"
+3,"bookstore/book/author","Book author element",bookstore,book,author,,,,,,,tns:AuthorType,true,,"Author information complex type"
+4,"bookstore/book/isbn","Book ISBN element",bookstore,book,isbn,,,,,,,tns:ISBNType,true,"pattern: ^[0-9]{13}$","Book identification number"
+5,"bookstore/book/price","Book price element",bookstore,book,price,,,,,,,xs:decimal,false,"min: 0","Book selling price"
+6,"bookstore/book/category","Book category element",bookstore,book,category,,,,,,,tns:CategoryType,false,,"Book classification"

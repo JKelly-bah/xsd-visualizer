@@ -1,0 +1,5 @@
+id,xpath,description,level1,level2,level3,level4,level5,level6,level7,level8,attribute,expected_type,required,validation_rules,business_purpose
+1,"test/path","Test requirement",test,path,,,,,,,xs:string,true,,"Test element"
+2,"empty/cells","Empty cells test",empty,,,,,,,,,xs:int,false,,"Test with empty cells"
+3,"","Empty xpath",invalid,test,,,,,,,xs:string,true,,"Should be skipped"
+,"invalid/id","Missing ID",invalid,id,,,,,,,xs:string,true,,"Should be skipped"
