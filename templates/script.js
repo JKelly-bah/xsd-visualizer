@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSearch();
     initializeExpandableElements();
     initializeTooltips();
+    initializeCollapsibleSections();
+    initializeLargeSchemaFeatures();
 });
 
 function initializeNavigation() {
@@ -252,9 +254,221 @@ function generateTreeHTML(element, depth = 0) {
     return html;
 }
 
+// Enhanced features for large schemas
+function initializeCollapsibleSections() {
+    // Auto-create collapsible sections for large content areas
+    const largeSections = document.querySelectorAll('.element-grid, .type-grid');
+    largeSections.forEach(section => {
+        if (section.children.length > 10) {
+            makeCollapsible(section.parentElement);
+        }
+    });
+}
+
+function makeCollapsible(element) {
+    if (element.querySelector('.collapsible-header')) return; // Already collapsible
+    
+    const header = document.createElement('div');
+    header.className = 'collapsible-header';
+    
+    const title = element.querySelector('h2, h3') || { textContent: 'Section' };
+    header.innerHTML = `
+        <span>${title.textContent}</span>
+        <span class="collapsible-toggle"></span>
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'collapsible-content';
+    
+    // Move existing content to collapsible container
+    while (element.firstChild && element.firstChild !== header) {
+        content.appendChild(element.firstChild);
+    }
+    
+    element.appendChild(header);
+    element.appendChild(content);
+    element.classList.add('collapsible-section');
+    
+    // Add click handler
+    header.addEventListener('click', function() {
+        element.classList.toggle('collapsed');
+    });
+}
+
+function initializeLargeSchemaFeatures() {
+    // Add floating navigation buttons
+    const floatingNav = document.createElement('div');
+    floatingNav.className = 'floating-nav';
+    floatingNav.innerHTML = `
+        <button class="floating-btn" onclick="scrollToTop()" title="Back to top">
+            ↑
+        </button>
+        <button class="floating-btn" onclick="toggleSearchBox()" title="Search">
+            🔍
+        </button>
+    `;
+    document.body.appendChild(floatingNav);
+    
+    // Add search box if not exists
+    if (!document.querySelector('.search-container')) {
+        addSearchBox();
+    }
+    
+    // Initialize virtual scrolling for very large lists
+    initializeVirtualScrolling();
+}
+
+function addSearchBox() {
+    const searchContainer = document.createElement('div');
+    searchContainer.className = 'search-container';
+    searchContainer.innerHTML = `
+        <input type="text" class="search-box" placeholder="Search elements, types, or documentation..." />
+        <div class="search-results" style="display: none;"></div>
+    `;
+    
+    // Insert after header
+    const header = document.querySelector('header');
+    header.parentNode.insertBefore(searchContainer, header.nextSibling);
+    
+    // Initialize search functionality
+    const searchBox = searchContainer.querySelector('.search-box');
+    const searchResults = searchContainer.querySelector('.search-results');
+    
+    searchBox.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            clearSearchHighlights();
+            return;
+        }
+        
+        performSearch(query, searchResults);
+    });
+    
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchContainer.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+}
+
+function performSearch(query, resultsContainer) {
+    const results = [];
+    
+    // Search in element names and documentation
+    document.querySelectorAll('[data-element-name], [data-type-name]').forEach(element => {
+        const name = element.getAttribute('data-element-name') || element.getAttribute('data-type-name');
+        const text = element.textContent.toLowerCase();
+        
+        if (name && name.toLowerCase().includes(query) || text.includes(query)) {
+            results.push({
+                name: name || 'Unknown',
+                element: element,
+                type: element.getAttribute('data-element-name') ? 'Element' : 'Type'
+            });
+        }
+    });
+    
+    // Display results
+    if (results.length > 0) {
+        resultsContainer.innerHTML = results.slice(0, 10).map(result => 
+            `<div class="search-result-item" onclick="scrollToElement('${result.element.id || ''}')">
+                <strong>${result.name}</strong> <em>(${result.type})</em>
+            </div>`
+        ).join('');
+        resultsContainer.style.display = 'block';
+        
+        // Highlight matches in the document
+        highlightSearchMatches(query);
+    } else {
+        resultsContainer.innerHTML = '<div class="search-result-item">No results found</div>';
+        resultsContainer.style.display = 'block';
+    }
+}
+
+function scrollToElement(elementId) {
+    if (elementId) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.style.boxShadow = '0 0 20px rgba(37, 99, 235, 0.5)';
+            setTimeout(() => {
+                element.style.boxShadow = '';
+            }, 2000);
+        }
+    }
+    document.querySelector('.search-results').style.display = 'none';
+}
+
+function highlightSearchMatches(query) {
+    clearSearchHighlights();
+    
+    const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+    
+    const textNodes = [];
+    let node;
+    while (node = walker.nextNode()) {
+        if (node.textContent.toLowerCase().includes(query)) {
+            textNodes.push(node);
+        }
+    }
+    
+    textNodes.forEach(textNode => {
+        const parent = textNode.parentNode;
+        if (parent.tagName !== 'SCRIPT' && parent.tagName !== 'STYLE') {
+            const regex = new RegExp(`(${query})`, 'gi');
+            const highlightedText = textNode.textContent.replace(regex, '<span class="search-highlight">$1</span>');
+            const wrapper = document.createElement('span');
+            wrapper.innerHTML = highlightedText;
+            parent.replaceChild(wrapper, textNode);
+        }
+    });
+}
+
+function clearSearchHighlights() {
+    document.querySelectorAll('.search-highlight').forEach(highlight => {
+        const parent = highlight.parentNode;
+        parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+        parent.normalize();
+    });
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function toggleSearchBox() {
+    const searchBox = document.querySelector('.search-box');
+    if (searchBox) {
+        searchBox.focus();
+        searchBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function initializeVirtualScrolling() {
+    // For very large lists, implement virtual scrolling
+    const largeLists = document.querySelectorAll('.element-grid, .type-grid');
+    largeLists.forEach(list => {
+        if (list.children.length > 50) {
+            // Convert to virtual scroll
+            list.classList.add('virtual-scroll');
+            // Implementation would depend on specific needs
+        }
+    });
+}
+
 // Export functions for use in other scripts
 window.XSDVisualization = {
     filterElements,
     createElementTree,
-    generateTreeHTML
+    generateTreeHTML,
+    performSearch,
+    scrollToElement,
+    makeCollapsible
 };

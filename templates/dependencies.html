@@ -20,7 +20,12 @@
     <main>
         <section class="dependency-visualization">
             <h2>Dependency Graph</h2>
-            <div id="dependency-graph" style="width: 100%; height: 600px;"></div>
+            <div class="graph-controls">
+                <button onclick="resetZoom()">Reset Zoom</button>
+                <button onclick="fitToView()">Fit to View</button>
+                <span>Use mouse wheel to zoom, drag to pan</span>
+            </div>
+            <div id="dependency-graph" style="width: 100%; height: 600px; border: 1px solid #ccc; overflow: hidden;"></div>
         </section>
 
         <section class="dependency-list">
@@ -55,17 +60,30 @@
     </footer>
 
     <script>
-        // Dependency graph visualization using D3.js
+        // Dependency graph visualization using D3.js with zoom and pan
         const dependencies = {{ dependencies | tojson | safe }};
         
         if (dependencies && dependencies.length > 0) {
-            const width = 800;
+            const container = d3.select("#dependency-graph");
+            const width = container.node().getBoundingClientRect().width;
             const height = 600;
             
-            const svg = d3.select("#dependency-graph")
+            const svg = container
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height);
+            
+            // Create zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", function(event) {
+                    g.attr("transform", event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            // Create main group for zoomable content
+            const g = svg.append("g");
             
             // Create nodes and links
             const nodes = [];
@@ -74,64 +92,105 @@
             
             dependencies.forEach(dep => {
                 if (!nodeMap.has(dep.source)) {
-                    nodeMap.set(dep.source, { id: dep.source, type: 'source' });
+                    nodeMap.set(dep.source, { 
+                        id: dep.source, 
+                        type: dep.source_type || 'source',
+                        file: dep.source_file || 'unknown'
+                    });
                     nodes.push(nodeMap.get(dep.source));
                 }
                 if (!nodeMap.has(dep.target)) {
-                    nodeMap.set(dep.target, { id: dep.target, type: dep.type });
+                    nodeMap.set(dep.target, { 
+                        id: dep.target, 
+                        type: dep.type,
+                        file: dep.target_file || 'unknown'
+                    });
                     nodes.push(nodeMap.get(dep.target));
                 }
                 
                 links.push({
                     source: dep.source,
                     target: dep.target,
-                    type: dep.type
+                    type: dep.type,
+                    source_file: dep.source_file || 'unknown',
+                    target_file: dep.target_file || 'unknown'
                 });
             });
             
-            // Create force simulation
+            // Create force simulation with better spacing
             const simulation = d3.forceSimulation(nodes)
-                .force("link", d3.forceLink(links).id(d => d.id).distance(100))
-                .force("charge", d3.forceManyBody().strength(-300))
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-800))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(30));
             
-            // Create links
-            const link = svg.append("g")
+            // Create arrow markers for directed edges
+            g.append("defs").selectAll("marker")
+                .data(["end"])
+                .enter().append("marker")
+                .attr("id", "arrow")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 20)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#666");
+            
+            // Create links with different colors for cross-file dependencies
+            const link = g.append("g")
                 .selectAll("line")
                 .data(links)
                 .enter().append("line")
-                .attr("stroke", "#999")
-                .attr("stroke-opacity", 0.6)
-                .attr("stroke-width", 2);
+                .attr("stroke", d => d.source_file !== d.target_file ? "#e74c3c" : "#999")
+                .attr("stroke-opacity", 0.8)
+                .attr("stroke-width", d => d.source_file !== d.target_file ? 3 : 2)
+                .attr("marker-end", "url(#arrow)")
+                .style("stroke-dasharray", d => d.source_file !== d.target_file ? "5,5" : "none");
             
-            // Create nodes
-            const node = svg.append("g")
+            // Create nodes with different shapes for different files
+            const node = g.append("g")
                 .selectAll("circle")
                 .data(nodes)
                 .enter().append("circle")
-                .attr("r", 8)
+                .attr("r", d => d.file === 'unknown' ? 12 : 15)
                 .attr("fill", d => {
-                    switch(d.type) {
-                        case 'complex_type': return "#2563eb";
-                        case 'simple_type': return "#06b6d4";
-                        case 'element': return "#16a34a";
-                        default: return "#64748b";
-                    }
+                    // Color by file
+                    const fileColors = {
+                        'test_bookstore.xsd': '#2563eb',
+                        'common-types.xsd': '#06b6d4', 
+                        'library.xsd': '#16a34a',
+                        'publisher.xsd': '#f59e0b',
+                        'unknown': '#64748b'
+                    };
+                    return fileColors[d.file] || '#8b5cf6';
                 })
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2)
+                .style("cursor", "pointer")
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
                     .on("end", dragended));
             
+            // Add tooltips
+            node.append("title")
+                .text(d => `${d.id}\nType: ${d.type}\nFile: ${d.file}`);
+            
             // Add labels
-            const label = svg.append("g")
+            const label = g.append("g")
                 .selectAll("text")
                 .data(nodes)
                 .enter().append("text")
                 .text(d => d.id)
                 .attr("font-size", "12px")
-                .attr("dx", 12)
-                .attr("dy", 4);
+                .attr("font-weight", "bold")
+                .attr("dx", 18)
+                .attr("dy", 4)
+                .style("pointer-events", "none")
+                .style("user-select", "none");
             
             // Update positions
             simulation.on("tick", () => {
@@ -150,6 +209,7 @@
                     .attr("y", d => d.y);
             });
             
+            // Drag functions
             function dragstarted(event, d) {
                 if (!event.active) simulation.alphaTarget(0.3).restart();
                 d.fx = d.x;
@@ -166,13 +226,39 @@
                 d.fx = null;
                 d.fy = null;
             }
+            
+            // Global functions for controls
+            window.resetZoom = function() {
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity
+                );
+            };
+            
+            window.fitToView = function() {
+                const bounds = g.node().getBBox();
+                const fullWidth = width;
+                const fullHeight = height;
+                const widthScale = fullWidth / bounds.width;
+                const heightScale = fullHeight / bounds.height;
+                const scale = 0.85 * Math.min(widthScale, heightScale);
+                const translate = [fullWidth / 2 - scale * (bounds.x + bounds.width / 2), 
+                                fullHeight / 2 - scale * (bounds.y + bounds.height / 2)];
+                
+                svg.transition().duration(750).call(
+                    zoom.transform,
+                    d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+                );
+            };
+            
         } else {
             d3.select("#dependency-graph")
                 .append("p")
                 .text("No dependencies to visualize.")
                 .style("text-align", "center")
                 .style("color", "#64748b")
-                .style("font-style", "italic");
+                .style("font-style", "italic")
+                .style("padding", "50px");
         }
     </script>
 

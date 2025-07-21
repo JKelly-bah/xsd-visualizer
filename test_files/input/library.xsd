@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.com/library"
+           xmlns:lib="http://example.com/library"
+           xmlns:pub="http://example.com/publisher"
+           elementFormDefault="qualified">
+
+    <!-- Import publisher schema -->
+    <xs:import namespace="http://example.com/publisher" 
+               schemaLocation="publisher.xsd"/>
+
+    <!-- Include common types -->
+    <xs:include schemaLocation="common-types.xsd"/>
+
+    <!-- Global elements -->
+    <xs:element name="library" type="lib:LibraryType"/>
+
+    <!-- Complex Types -->
+    <xs:complexType name="LibraryType">
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="address" type="lib:AddressType"/>
+            <xs:element name="books" type="lib:BooksType"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="BooksType">
+        <xs:sequence>
+            <xs:element name="book" type="lib:BookType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="BookType">
+        <xs:sequence>
+            <xs:element name="title" type="xs:string"/>
+            <xs:element name="author" type="xs:string"/>
+            <xs:element name="isbn" type="lib:ISBNType"/>
+            <xs:element name="publisher" type="pub:PublisherType"/>
+            <xs:element name="publicationDate" type="xs:date"/>
+            <xs:element name="price" type="lib:PriceType"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:ID" use="required"/>
+    </xs:complexType>
+
+</xs:schema>

@@ -251,19 +251,102 @@ class XSDTreeVisualizer:
     
     def export_dot_graph(self, output_path: str, element_name: Optional[str] = None) -> None:
         """
-        Export tree as DOT graph format.
+        Export tree as DOT graph format with cross-file dependencies.
         
         Args:
             output_path: Path for output .dot file
             element_name: Specific element to visualize
         """
-        tree = self.create_anytree_structure(element_name)
+        # Check if we have a multi-file parser with dependencies
+        from .multi_file_xsd_parser import MultiFileXSDParser
         
-        # Use UniqueDotExporter to handle duplicate names
-        exporter = UniqueDotExporter(tree)
-        exporter.to_dotfile(output_path)
+        if isinstance(self.parser, MultiFileXSDParser) and hasattr(self.parser, 'file_dependencies'):
+            self._export_multi_file_dot_graph(output_path, element_name)
+        else:
+            # Fallback to single-file tree
+            tree = self.create_anytree_structure(element_name)
+            exporter = UniqueDotExporter(tree)
+            exporter.to_dotfile(output_path)
         
         console.print(f"[bold green]✓[/bold green] DOT graph exported: {output_path}")
+    
+    def _export_multi_file_dot_graph(self, output_path: str, element_name: Optional[str] = None) -> None:
+        """Export DOT graph showing cross-file dependencies."""
+        dot_content = ['digraph XSDDependencies {']
+        dot_content.append('    rankdir=TB;')
+        dot_content.append('    node [shape=box, style=filled];')
+        dot_content.append('    edge [color=gray];')
+        dot_content.append('')
+        
+        # Add file clusters
+        file_colors = {
+            'test_bookstore.xsd': '#e3f2fd',
+            'common-types.xsd': '#e0f7fa', 
+            'library.xsd': '#e8f5e8',
+            'publisher.xsd': '#fff3e0',
+        }
+        
+        processed_files = getattr(self.parser, 'processed_files', set())
+        file_dependencies = getattr(self.parser, 'file_dependencies', {})
+        
+        # Create subgraphs for each file
+        for i, file_path in enumerate(processed_files):
+            file_name = Path(file_path).name
+            color = file_colors.get(file_name, '#f5f5f5')
+            
+            dot_content.append(f'    subgraph cluster_{i} {{')
+            dot_content.append(f'        label="{file_name}";')
+            dot_content.append(f'        style=filled;')
+            dot_content.append(f'        fillcolor="{color}";')
+            dot_content.append(f'        fontsize=14;')
+            dot_content.append(f'        fontweight=bold;')
+            dot_content.append('')
+            
+            # Add elements from this file
+            structure = getattr(self.parser, 'all_structures', {}).get(str(file_path), self.structure)
+            if structure:
+                # Add root elements
+                for element in structure.get('elements', []):
+                    node_id = f'"{file_name}::{element["name"]}"'
+                    dot_content.append(f'        {node_id} [label="{element["name"]}\\n({element["type"] or "no type"})", fillcolor="lightblue"];')
+                
+                # Add complex types
+                for type_name in structure.get('complex_types', {}):
+                    node_id = f'"{file_name}::{type_name}"'
+                    dot_content.append(f'        {node_id} [label="{type_name}\\n(complex type)", fillcolor="lightgreen"];')
+                
+                # Add simple types
+                for type_name in structure.get('simple_types', {}):
+                    node_id = f'"{file_name}::{type_name}"'
+                    dot_content.append(f'        {node_id} [label="{type_name}\\n(simple type)", fillcolor="lightyellow"];')
+            
+            dot_content.append('    }')
+            dot_content.append('')
+        
+        # Add cross-file dependencies
+        dot_content.append('    // Cross-file dependencies')
+        for source_file, dependent_files in file_dependencies.items():
+            source_name = Path(source_file).name
+            for dep_file in dependent_files:
+                dep_name = Path(dep_file).name
+                dot_content.append(f'    "{source_name}" -> "{dep_name}" [style=dashed, color=red, penwidth=2];')
+        
+        # Add schema references if available
+        schema_references = getattr(self.parser, 'schema_references', [])
+        for ref in schema_references:
+            if ref.resolved_path:
+                source_name = Path(self.parser.xsd_path).name
+                target_name = Path(ref.resolved_path).name
+                style = 'solid' if ref.reference_type == 'include' else 'dotted'
+                color = 'blue' if ref.reference_type == 'import' else 'purple'
+                dot_content.append(f'    "{source_name}" -> "{target_name}" [label="{ref.reference_type}", style={style}, color={color}];')
+        
+        dot_content.append('}')
+        
+        # Write to file
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(dot_content))
+    
     
     def export_svg(self, output_path: str, element_name: Optional[str] = None) -> None:
         """
