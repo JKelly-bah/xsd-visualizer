@@ -22,8 +22,8 @@ from dataclasses import dataclass, field
 # Add src directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-from utils.multi_file_xsd_parser import MultiFileXSDParser
-from utils.xsd_parser import XSDParser
+from src.parsers.multi_file_xsd_parser import MultiFileXSDParser
+from src.parsers.xsd_parser import XSDParser
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -67,25 +67,31 @@ class JavaUMLGenerator:
         self.relationships: List[Relationship] = []
         self.packages: Set[str] = set()
         
-        # Type mappings
-        self.xsd_to_java_types = {
-            'xs:string': 'String',
-            'xs:int': 'int',
-            'xs:integer': 'Integer',
-            'xs:long': 'long',
-            'xs:double': 'double',
-            'xs:float': 'float',
-            'xs:boolean': 'boolean',
-            'xs:date': 'LocalDate',
-            'xs:dateTime': 'LocalDateTime',
-            'xs:time': 'LocalTime',
-            'xs:decimal': 'BigDecimal',
-            'xs:byte': 'byte',
-            'xs:short': 'short',
-            'xs:anyURI': 'URI',
-            'xs:base64Binary': 'byte[]',
-            'xs:hexBinary': 'byte[]',
+        # Type mappings - support both xs: and xsd: prefixes
+        base_types = {
+            'string': 'String',
+            'int': 'int',
+            'integer': 'Integer',
+            'long': 'long',
+            'double': 'double',
+            'float': 'float',
+            'boolean': 'boolean',
+            'date': 'LocalDate',
+            'dateTime': 'LocalDateTime',
+            'time': 'LocalTime',
+            'decimal': 'BigDecimal',
+            'byte': 'byte',
+            'short': 'short',
+            'anyURI': 'URI',
+            'base64Binary': 'byte[]',
+            'hexBinary': 'byte[]',
         }
+        
+        # Create mappings for both xs: and xsd: prefixes
+        self.xsd_to_java_types = {}
+        for type_name, java_type in base_types.items():
+            self.xsd_to_java_types[f'xs:{type_name}'] = java_type
+            self.xsd_to_java_types[f'xsd:{type_name}'] = java_type
         
     def analyze_xsd_files(self, xsd_files: List[str]) -> Dict[str, Any]:
         """Analyze XSD files and build Java UML model"""
@@ -126,7 +132,7 @@ class JavaUMLGenerator:
                 name=self._to_java_class_name(type_name),
                 package=package_name,
                 namespace=target_namespace,
-                documentation=type_info.get('documentation', ''),
+                documentation=self._extract_documentation(type_info),
                 xsd_type='complex'
             )
             
@@ -149,7 +155,7 @@ class JavaUMLGenerator:
                         name=self._to_java_class_name(element_name),
                         package=package_name,
                         namespace=target_namespace,
-                        documentation=element_info.get('documentation', ''),
+                        documentation=self._extract_documentation(element_info),
                         xsd_type='element'
                     )
                     
@@ -168,7 +174,7 @@ class JavaUMLGenerator:
                         name=self._to_java_class_name(element_name),
                         package=package_name,
                         namespace=target_namespace,
-                        documentation=element_info.get('documentation', ''),
+                        documentation=self._extract_documentation(element_info),
                         xsd_type='element'
                     )
                     
@@ -182,12 +188,13 @@ class JavaUMLGenerator:
                 
         # Process simple types as enums or constants
         for type_name, type_info in structure.get('simple_types', {}).items():
+            # Handle direct enumeration
             if 'enumeration' in type_info:
                 java_class = JavaClass(
                     name=self._to_java_class_name(type_name),
                     package=package_name,
                     namespace=target_namespace,
-                    documentation=type_info.get('documentation', ''),
+                    documentation=self._extract_documentation(type_info),
                     xsd_type='enum'
                 )
                 
@@ -203,6 +210,63 @@ class JavaUMLGenerator:
                     
                 self.classes[java_class.name] = java_class
                 
+            # Handle xsd:restriction with xsd:enumeration
+            elif 'restriction' in type_info or 'xsd:restriction' in type_info:
+                restriction_info = type_info.get('restriction') or type_info.get('xsd:restriction', {})
+                
+                # Look for enumeration values in the restriction
+                enum_values = []
+                
+                # Check various possible structures for enumerations
+                if 'enumeration' in restriction_info:
+                    enum_values = restriction_info['enumeration']
+                elif 'xsd:enumeration' in restriction_info:
+                    enum_values = restriction_info['xsd:enumeration']
+                elif isinstance(restriction_info, list):
+                    # Sometimes restrictions are stored as lists of constraint objects
+                    for constraint in restriction_info:
+                        if isinstance(constraint, dict):
+                            if 'enumeration' in constraint:
+                                if isinstance(constraint['enumeration'], list):
+                                    enum_values.extend(constraint['enumeration'])
+                                else:
+                                    enum_values.append(constraint['enumeration'])
+                            elif 'xsd:enumeration' in constraint:
+                                if isinstance(constraint['xsd:enumeration'], list):
+                                    enum_values.extend(constraint['xsd:enumeration'])
+                                else:
+                                    enum_values.append(constraint['xsd:enumeration'])
+                
+                # Create enum class if we found enumeration values
+                if enum_values:
+                    java_class = JavaClass(
+                        name=self._to_java_class_name(type_name),
+                        package=package_name,
+                        namespace=target_namespace,
+                        documentation=self._extract_documentation(type_info),
+                        xsd_type='enum'
+                    )
+                    
+                    # Add enum values as constants
+                    for enum_value in enum_values:
+                        # Handle different formats of enum values
+                        if isinstance(enum_value, dict) and 'value' in enum_value:
+                            value = enum_value['value']
+                        elif isinstance(enum_value, str):
+                            value = enum_value
+                        else:
+                            value = str(enum_value)
+                            
+                        java_class.attributes.append({
+                            'name': value.upper().replace('-', '_').replace(' ', '_'),
+                            'type': java_class.name,
+                            'visibility': 'public',
+                            'is_static': True,
+                            'is_final': True
+                        })
+                        
+                    self.classes[java_class.name] = java_class
+                
     def _extract_attributes_from_type(self, java_class: JavaClass, type_info: Dict[str, Any]):
         """Extract attributes from XSD type information"""
         
@@ -211,7 +275,13 @@ class JavaUMLGenerator:
         if isinstance(elements, list):
             for element_info in elements:
                 element_name = element_info.get('name', '')
-                java_type = self._xsd_type_to_java(element_info.get('type', 'String'))
+                
+                # Check if element has restriction/enumeration
+                if ('restriction' in element_info or 'xsd:restriction' in element_info or 
+                    'simpleType' in element_info):
+                    java_type = self._handle_restriction_type(element_info)
+                else:
+                    java_type = self._xsd_type_to_java(element_info.get('type', 'String'))
                 
                 # Handle multiplicity
                 max_occurs = element_info.get('max_occurs', '1')
@@ -232,7 +302,13 @@ class JavaUMLGenerator:
         if isinstance(attributes, list):
             for attr_info in attributes:
                 attr_name = attr_info.get('name', '')
-                java_type = self._xsd_type_to_java(attr_info.get('type', 'String'))
+                
+                # Check if attribute has restriction/enumeration
+                if ('restriction' in attr_info or 'xsd:restriction' in attr_info or 
+                    'simpleType' in attr_info):
+                    java_type = self._handle_restriction_type(attr_info)
+                else:
+                    java_type = self._xsd_type_to_java(attr_info.get('type', 'String'))
                 
                 java_class.attributes.append({
                     'name': self._to_java_field_name(attr_name),
@@ -245,7 +321,12 @@ class JavaUMLGenerator:
         else:
             # Handle dict format for backwards compatibility
             for attr_name, attr_info in attributes.items():
-                java_type = self._xsd_type_to_java(attr_info.get('type', 'String'))
+                # Check if attribute has restriction/enumeration
+                if ('restriction' in attr_info or 'xsd:restriction' in attr_info or 
+                    'simpleType' in attr_info):
+                    java_type = self._handle_restriction_type(attr_info)
+                else:
+                    java_type = self._xsd_type_to_java(attr_info.get('type', 'String'))
                 
                 java_class.attributes.append({
                     'name': self._to_java_field_name(attr_name),
@@ -333,18 +414,64 @@ class JavaUMLGenerator:
             
         return '.'.join(part.lower().replace('-', '') for part in parts if part)
         
+    def _extract_documentation(self, element_info: Dict[str, Any]) -> str:
+        """Extract documentation from XSD element info, handling various formats"""
+        doc_sources = [
+            'documentation',  # Standard field
+            'doc',           # Alternative field name
+            'description',   # Another alternative
+        ]
+        
+        # Try standard documentation fields first
+        for field in doc_sources:
+            if field in element_info and element_info[field]:
+                return str(element_info[field]).strip()
+                
+        # Look for annotation/documentation structure
+        if 'annotation' in element_info:
+            annotation = element_info['annotation']
+            if isinstance(annotation, dict):
+                if 'documentation' in annotation:
+                    return str(annotation['documentation']).strip()
+                if 'doc' in annotation:
+                    return str(annotation['doc']).strip()
+                    
+        # Look for nested structures that might contain documentation
+        if 'xsd:annotation' in element_info:
+            return self._extract_documentation({'annotation': element_info['xsd:annotation']})
+            
+        # Look in restriction for documentation
+        if 'restriction' in element_info:
+            restriction_doc = self._extract_documentation(element_info['restriction'])
+            if restriction_doc:
+                return restriction_doc
+                
+        if 'xsd:restriction' in element_info:
+            restriction_doc = self._extract_documentation(element_info['xsd:restriction'])
+            if restriction_doc:
+                return restriction_doc
+            
+        return ""
+        
     def _to_java_class_name(self, xsd_name: str) -> str:
         """Convert XSD type name to Java class name"""
-        if not xsd_name:
-            return ""
+        if not xsd_name or xsd_name.strip() == "":
+            return f"UnnamedType{len(self.classes) + 1}"
             
         # Remove namespace prefix
         if ':' in xsd_name:
             xsd_name = xsd_name.split(':', 1)[1]
             
+        # Handle empty name after prefix removal
+        if not xsd_name or xsd_name.strip() == "":
+            return f"UnnamedType{len(self.classes) + 1}"
+            
         # Convert to PascalCase
         parts = xsd_name.replace('-', '_').split('_')
-        return ''.join(part.capitalize() for part in parts)
+        result = ''.join(part.capitalize() for part in parts if part.strip())
+        
+        # Final fallback for empty result
+        return result if result else f"UnnamedType{len(self.classes) + 1}"
         
     def _to_java_field_name(self, xsd_name: str) -> str:
         """Convert XSD element name to Java field name"""
@@ -364,8 +491,8 @@ class JavaUMLGenerator:
         # Remove namespace prefix
         if ':' in xsd_type:
             prefix, local_type = xsd_type.split(':', 1)
-            if prefix == 'xs':
-                xsd_type = f'xs:{local_type}'
+            if prefix in ['xs', 'xsd']:  # Handle both standard XSD prefixes
+                xsd_type = f'{prefix}:{local_type}'
             else:
                 # Custom type - convert to class name for types ending with 'Type'
                 if local_type.endswith('Type') or local_type.endswith('type'):
@@ -379,6 +506,44 @@ class JavaUMLGenerator:
             return self._to_java_class_name(xsd_type)
             
         return self.xsd_to_java_types.get(xsd_type, 'String')
+        
+    def _handle_restriction_type(self, element_info: Dict[str, Any]) -> str:
+        """Handle restricted types that might be enums or constrained types"""
+        
+        # Look for restriction information
+        restriction_info = None
+        if 'restriction' in element_info:
+            restriction_info = element_info['restriction']
+        elif 'xsd:restriction' in element_info:
+            restriction_info = element_info['xsd:restriction']
+        elif 'simpleType' in element_info:
+            simple_type = element_info['simpleType']
+            if 'restriction' in simple_type:
+                restriction_info = simple_type['restriction']
+            elif 'xsd:restriction' in simple_type:
+                restriction_info = simple_type['xsd:restriction']
+                
+        if restriction_info:
+            # Check if this is an enumeration
+            enum_values = []
+            
+            if 'enumeration' in restriction_info:
+                enum_values = restriction_info['enumeration']
+            elif 'xsd:enumeration' in restriction_info:
+                enum_values = restriction_info['xsd:enumeration']
+                
+            # If we found enumeration values, this should be treated as an enum type
+            if enum_values:
+                # Generate a name for this inline enum type
+                base_name = element_info.get('name', 'InlineEnum')
+                return f"{self._to_java_class_name(base_name)}Enum"
+                
+            # Check for other restrictions like pattern, length, etc.
+            # For now, just return String for other restriction types
+            base_type = restriction_info.get('base', 'xs:string')
+            return self._xsd_type_to_java(base_type)
+            
+        return 'String'
         
     def generate_plantuml(self) -> str:
         """Generate PlantUML class diagram"""
