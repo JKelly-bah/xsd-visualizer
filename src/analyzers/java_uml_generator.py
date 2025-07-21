@@ -100,14 +100,40 @@ class JavaUMLGenerator:
         
         # Parse all XSD files
         structures = {}
-        for xsd_file in xsd_files:
+        
+        if len(xsd_files) == 1:
+            # Single file - use regular parser
             try:
-                parser = XSDParser(str(xsd_file))
+                parser = XSDParser(str(xsd_files[0]))
                 structure = parser.parse()
-                structures[str(xsd_file)] = structure
+                structures[str(xsd_files[0])] = structure
             except Exception as e:
-                self.console.print(f"⚠️ Warning: Could not parse {xsd_file}: {e}")
-                continue
+                self.console.print(f"⚠️ Warning: Could not parse {xsd_files[0]}: {e}")
+        else:
+            # Multiple files - check if they reference each other
+            use_multi_file = self._should_use_multi_file_parser(xsd_files)
+            
+            if use_multi_file:
+                # Use multi-file parser for the main file (first one)
+                try:
+                    parser = MultiFileXSDParser(str(xsd_files[0]))
+                    structure = parser.parse()
+                    # Multi-file parser combines all files into one structure
+                    structures[str(xsd_files[0])] = structure
+                except Exception as e:
+                    self.console.print(f"⚠️ Warning: Multi-file parsing failed, falling back to individual parsing: {e}")
+                    use_multi_file = False
+            
+            if not use_multi_file:
+                # Parse each file individually
+                for xsd_file in xsd_files:
+                    try:
+                        parser = XSDParser(str(xsd_file))
+                        structure = parser.parse()
+                        structures[str(xsd_file)] = structure
+                    except Exception as e:
+                        self.console.print(f"⚠️ Warning: Could not parse {xsd_file}: {e}")
+                        continue
             
         # Extract Java classes from XSD structure
         for xsd_file, structure in structures.items():
@@ -919,6 +945,25 @@ class JavaUMLGenerator:
                 for rel_type in set(r.relationship_type for r in self.relationships)
             }
         }
+    
+    def _should_use_multi_file_parser(self, xsd_files: List[str]) -> bool:
+        """Determine if multi-file parser should be used based on file content."""
+        try:
+            # Check if any file contains imports, includes, or redefines
+            for xsd_file in xsd_files:
+                with open(xsd_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                    # Look for multi-file constructs
+                    if any(construct in content for construct in [
+                        'xs:import', 'xsd:import',
+                        'xs:include', 'xsd:include', 
+                        'xs:redefine', 'xsd:redefine'
+                    ]):
+                        return True
+            return False
+        except Exception:
+            # If we can't read files, fall back to single-file parsing
+            return False
         
     def save_outputs(self, formats: List[str] = ['plantuml', 'mermaid', 'java']):
         """Save generated UML and code to files"""

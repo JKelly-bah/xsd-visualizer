@@ -256,8 +256,10 @@ class MultiFileXSDParser(XSDParser):
             self.root = root
             
             try:
-                # Parse components with file context
+                # Parse components with file context - including new attribute support
                 self._parse_simple_types_from_file(file_path)
+                self._parse_global_attributes_from_file(file_path)
+                self._parse_attribute_groups_from_file(file_path)
                 self._parse_complex_types_from_file(file_path)
                 self._parse_global_elements_from_file(file_path)
                 
@@ -281,6 +283,63 @@ class MultiFileXSDParser(XSDParser):
             simple_type = self._extract_simple_type(elem)
             # TODO: Add file source information tracking
             self.simple_types[simple_type.name] = simple_type
+    
+    def _parse_global_attributes_from_file(self, file_path: str) -> None:
+        """Parse global attributes from a specific file."""
+        if self.root is None:
+            return
+            
+        # Parse both xs:attribute and xsd:attribute
+        for prefix in ['xs', 'xsd']:
+            xpath = f'.//{prefix}:attribute[@name]'
+            global_attrs = self.root.xpath(xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            for attr_elem in global_attrs:
+                attr_name = attr_elem.get('name')
+                if not attr_name:
+                    continue
+                    
+                self.global_attributes[attr_name] = {
+                    'name': attr_name,
+                    'type': attr_elem.get('type', 'xsd:string'),
+                    'use': attr_elem.get('use', 'optional'),
+                    'default': attr_elem.get('default', None),
+                    'fixed': attr_elem.get('fixed', None),
+                    'documentation': self._extract_documentation_from_element(attr_elem),
+                    'source_file': file_path  # Track which file this came from
+                }
+    
+    def _parse_attribute_groups_from_file(self, file_path: str) -> None:
+        """Parse attribute groups from a specific file."""
+        if self.root is None:
+            return
+            
+        # Parse both xs:attributeGroup and xsd:attributeGroup
+        for prefix in ['xs', 'xsd']:
+            xpath = f'.//{prefix}:attributeGroup[@name]'
+            attr_groups = self.root.xpath(xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            for group_elem in attr_groups:
+                group_name = group_elem.get('name')
+                if not group_name:
+                    continue
+                
+                # Extract attributes within this group
+                attributes = []
+                attr_xpath = f'./{prefix}:attribute'
+                attr_elements = group_elem.xpath(attr_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+                
+                for attr_elem in attr_elements:
+                    attr_info = self._extract_attribute_info(attr_elem, prefix)
+                    if attr_info:
+                        attributes.append(attr_info)
+                
+                self.attribute_groups[group_name] = {
+                    'name': group_name,
+                    'attributes': attributes,
+                    'documentation': self._extract_documentation_from_element(group_elem),
+                    'source_file': file_path  # Track which file this came from
+                }
     
     def _parse_complex_types_from_file(self, file_path: str) -> None:
         """Parse complex types from a specific file."""

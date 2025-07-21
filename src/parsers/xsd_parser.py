@@ -425,6 +425,16 @@ class XSDParser:
             attr_xpath = f'./{prefix}:attribute'
             attr_elements = elem.xpath(attr_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
             
+            # Also handle attributes within complexContent/restriction
+            complex_content_xpath = f'./{prefix}:complexContent/{prefix}:restriction/{prefix}:attribute'
+            complex_content_attrs = elem.xpath(complex_content_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            attr_elements.extend(complex_content_attrs)
+            
+            # Also handle attributes within complexContent/extension
+            complex_extension_xpath = f'./{prefix}:complexContent/{prefix}:extension/{prefix}:attribute'
+            complex_extension_attrs = elem.xpath(complex_extension_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            attr_elements.extend(complex_extension_attrs)
+            
             for attr_elem in attr_elements:
                 # Create a unique key to avoid duplicates
                 attr_key = (attr_elem.get('name', ''), attr_elem.get('ref', ''), attr_elem.get('type', ''))
@@ -437,9 +447,19 @@ class XSDParser:
                         if complex_type:
                             complex_type.attributes.append(attr_info)
             
-            # Handle attribute group references
+            # Handle attribute group references (direct and within restrictions/extensions)
             attr_group_xpath = f'./{prefix}:attributeGroup[@ref]'
             attr_group_refs = elem.xpath(attr_group_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            # Also handle attribute groups within complexContent/restriction
+            complex_content_group_xpath = f'./{prefix}:complexContent/{prefix}:restriction/{prefix}:attributeGroup[@ref]'
+            complex_content_groups = elem.xpath(complex_content_group_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            attr_group_refs.extend(complex_content_groups)
+            
+            # Also handle attribute groups within complexContent/extension
+            complex_extension_group_xpath = f'./{prefix}:complexContent/{prefix}:extension/{prefix}:attributeGroup[@ref]'
+            complex_extension_groups = elem.xpath(complex_extension_group_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            attr_group_refs.extend(complex_extension_groups)
             
             for attr_group_ref in attr_group_refs:
                 ref_name = attr_group_ref.get('ref', None)
