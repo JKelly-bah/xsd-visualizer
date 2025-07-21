@@ -74,3 +74,4 @@ Icon
 # OS generated files
 Thumbs.db
 ehthumbs.db
+test_results/
