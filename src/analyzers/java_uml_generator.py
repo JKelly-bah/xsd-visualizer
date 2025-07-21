@@ -548,14 +548,21 @@ class JavaUMLGenerator:
     def generate_plantuml(self) -> str:
         """Generate PlantUML class diagram"""
         
-        # Filter classes - only include classes with attributes
-        valid_classes = {name: cls for name, cls in self.classes.items() if cls.attributes}
+        # Debug: Show all classes found
+        self.console.print(f"Debug: Found {len(self.classes)} classes total:")
+        for name, cls in self.classes.items():
+            self.console.print(f"  - {name}: {len(cls.attributes)} attributes, type: {cls.xsd_type}")
         
+        # Include all classes, not just those with attributes
+        # Some classes might be important for relationships even without attributes
+        valid_classes = self.classes.copy()
+        
+        # But for display purposes, we'll show a note if a class has no attributes
         uml = ['@startuml XSD_Java_Classes', '']
         
         # Add packages
         for package in sorted(self.packages):
-            # Check if this package has any valid classes
+            # Check if this package has any classes
             package_classes = [cls for cls in valid_classes.values() if cls.package == package]
             if not package_classes:
                 continue
@@ -604,13 +611,17 @@ class JavaUMLGenerator:
         lines.append(class_line + ' {')
         
         # Add attributes
-        for attr in java_class.attributes:
-            visibility = '+' if attr['visibility'] == 'public' else '-'
-            static_final = ''
-            if attr.get('is_static') and attr.get('is_final'):
-                static_final = ' {static}'
-                
-            lines.append(f'  {visibility}{attr["name"]} : {attr["type"]}{static_final}')
+        if java_class.attributes:
+            for attr in java_class.attributes:
+                visibility = '+' if attr['visibility'] == 'public' else '-'
+                static_final = ''
+                if attr.get('is_static') and attr.get('is_final'):
+                    static_final = ' {static}'
+                    
+                lines.append(f'  {visibility}{attr["name"]} : {attr["type"]}{static_final}')
+        else:
+            # Add a placeholder comment for empty classes
+            lines.append('  // No attributes found in XSD')
             
         # Add methods (getters/setters)
         if java_class.attributes and java_class.xsd_type != 'enum':
@@ -655,8 +666,8 @@ class JavaUMLGenerator:
         
         mermaid = ['classDiagram']
         
-        # Filter classes - only include classes with attributes
-        valid_classes = {name: cls for name, cls in self.classes.items() if cls.attributes}
+        # Include all classes, not just those with attributes
+        valid_classes = self.classes.copy()
         
         # Add classes
         for class_name, java_class in valid_classes.items():
