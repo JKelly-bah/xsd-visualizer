@@ -73,6 +73,8 @@ class XSDParser:
         self.complex_types: Dict[str, XSDComplexType] = {}
         self.simple_types: Dict[str, XSDSimpleType] = {}
         self.global_elements: Dict[str, XSDElement] = {}
+        self.global_attributes: Dict[str, Dict[str, Any]] = {}
+        self.attribute_groups: Dict[str, Dict[str, Any]] = {}
         self.dependencies: Dict[str, Set[str]] = {}
         
         # Statistics
@@ -126,6 +128,8 @@ class XSDParser:
         
         # Parse in order of dependencies
         self._parse_simple_types()
+        self._parse_global_attributes()
+        self._parse_attribute_groups()
         self._parse_complex_types()
         self._parse_global_elements()
         self._parse_root_elements()
@@ -180,6 +184,65 @@ class XSDParser:
         
         logger.info(f"Parsed {len(self.global_elements)} global elements")
     
+    def _parse_global_attributes(self) -> None:
+        """Parse global attribute definitions."""
+        if self.root is None:
+            return
+            
+        # Parse both xs:attribute and xsd:attribute
+        for prefix in ['xs', 'xsd']:
+            xpath = f'.//{prefix}:attribute[@name]'
+            global_attrs = self.root.xpath(xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            for attr_elem in global_attrs:
+                attr_name = attr_elem.get('name')
+                if not attr_name:
+                    continue
+                    
+                self.global_attributes[attr_name] = {
+                    'name': attr_name,
+                    'type': attr_elem.get('type', 'xsd:string'),
+                    'use': attr_elem.get('use', 'optional'),
+                    'default': attr_elem.get('default'),
+                    'fixed': attr_elem.get('fixed'),
+                    'documentation': self._extract_documentation_from_element(attr_elem)
+                }
+        
+        logger.info(f"Parsed {len(self.global_attributes)} global attributes")
+    
+    def _parse_attribute_groups(self) -> None:
+        """Parse attribute group definitions."""
+        if self.root is None:
+            return
+            
+        # Parse both xs:attributeGroup and xsd:attributeGroup
+        for prefix in ['xs', 'xsd']:
+            xpath = f'.//{prefix}:attributeGroup[@name]'
+            attr_groups = self.root.xpath(xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            for group_elem in attr_groups:
+                group_name = group_elem.get('name')
+                if not group_name:
+                    continue
+                
+                # Extract attributes within this group
+                attributes = []
+                attr_xpath = f'./{prefix}:attribute'
+                attr_elements = group_elem.xpath(attr_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+                
+                for attr_elem in attr_elements:
+                    attr_info = self._extract_attribute_info(attr_elem, prefix)
+                    if attr_info:
+                        attributes.append(attr_info)
+                
+                self.attribute_groups[group_name] = {
+                    'name': group_name,
+                    'attributes': attributes,
+                    'documentation': self._extract_documentation_from_element(group_elem)
+                }
+        
+        logger.info(f"Parsed {len(self.attribute_groups)} attribute groups")
+    
     def _parse_root_elements(self) -> None:
         """Parse root-level elements that can be document roots."""
         if self.root is None:
@@ -191,6 +254,63 @@ class XSDParser:
         for elem in root_elements:
             element = self._extract_element(elem, depth=0)
             self.elements.append(element)
+    
+    def _extract_attribute_info(self, attr_elem: _Element, prefix: str = 'xs') -> Optional[Dict[str, Any]]:
+        """Extract attribute information from an attribute element."""
+        attr_name = attr_elem.get('name', None)
+        attr_ref = attr_elem.get('ref', None)
+        
+        if attr_name:
+            # Direct attribute definition
+            return {
+                'name': attr_name,
+                'type': attr_elem.get('type', 'xsd:string'),
+                'use': attr_elem.get('use', 'optional'),
+                'default': attr_elem.get('default', None),
+                'fixed': attr_elem.get('fixed', None),
+                'documentation': self._extract_documentation_from_element(attr_elem)
+            }
+        elif attr_ref:
+            # Reference to global attribute
+            # Remove namespace prefix from ref if present
+            ref_name = attr_ref.split(':')[-1] if ':' in attr_ref else attr_ref
+            
+            # Look up the global attribute
+            if ref_name in self.global_attributes:
+                attr_info = self.global_attributes[ref_name].copy()
+                # Override use if specified in the reference
+                use_override = attr_elem.get('use', None)
+                if use_override:
+                    attr_info['use'] = use_override
+                return attr_info
+            else:
+                # Create a placeholder if global attribute not found
+                return {
+                    'name': ref_name,
+                    'type': 'String',  # Default type
+                    'use': attr_elem.get('use', 'optional'),
+                    'default': attr_elem.get('default', None),
+                    'documentation': f"Reference to global attribute: {attr_ref}"
+                }
+        
+        return None
+    
+    def _extract_documentation_from_element(self, elem: _Element) -> str:
+        """Extract documentation from an XSD element's annotation."""
+        # Look for annotation/documentation
+        for prefix in ['xs', 'xsd']:
+            annotation_xpath = f'./{prefix}:annotation/{prefix}:documentation'
+            doc_elements = elem.xpath(annotation_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            if doc_elements:
+                # Combine all documentation elements
+                docs = []
+                for doc_elem in doc_elements:
+                    if doc_elem.text:
+                        docs.append(doc_elem.text.strip())
+                return ' '.join(docs)
+        
+        return ""
     
     def _extract_element(self, elem: _Element, parent: Optional[XSDElement] = None, depth: int = 0) -> XSDElement:
         """Extract an XSD element with all its properties and children."""
@@ -295,19 +415,47 @@ class XSDParser:
                     if complex_type:
                         complex_type.elements.append(child_element)
         
-        # Handle attributes
-        attr_elements = elem.xpath('./xs:attribute', namespaces={'xs': 'http://www.w3.org/2001/XMLSchema'})
-        for attr_elem in attr_elements:
-            attr_info = {
-                'name': attr_elem.get('name'),
-                'type': attr_elem.get('type'),
-                'use': attr_elem.get('use', 'optional'),
-                'default': attr_elem.get('default')
-            }
-            if parent_element:
-                parent_element.attributes.append(attr_info)
-            if complex_type:
-                complex_type.attributes.append(attr_info)
+        # Handle attributes with support for both xs: and xsd: prefixes
+        # Use a set to avoid duplicates when processing both prefixes
+        processed_attributes = set()
+        processed_attr_groups = set()
+        
+        for prefix in ['xs', 'xsd']:
+            # Handle direct attributes
+            attr_xpath = f'./{prefix}:attribute'
+            attr_elements = elem.xpath(attr_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            for attr_elem in attr_elements:
+                # Create a unique key to avoid duplicates
+                attr_key = (attr_elem.get('name', ''), attr_elem.get('ref', ''), attr_elem.get('type', ''))
+                if attr_key not in processed_attributes:
+                    processed_attributes.add(attr_key)
+                    attr_info = self._extract_attribute_info(attr_elem, prefix)
+                    if attr_info:
+                        if parent_element:
+                            parent_element.attributes.append(attr_info)
+                        if complex_type:
+                            complex_type.attributes.append(attr_info)
+            
+            # Handle attribute group references
+            attr_group_xpath = f'./{prefix}:attributeGroup[@ref]'
+            attr_group_refs = elem.xpath(attr_group_xpath, namespaces={prefix: 'http://www.w3.org/2001/XMLSchema'})
+            
+            for attr_group_ref in attr_group_refs:
+                ref_name = attr_group_ref.get('ref', None)
+                if ref_name and ref_name not in processed_attr_groups:
+                    processed_attr_groups.add(ref_name)
+                    # Remove namespace prefix from ref if present
+                    group_name = ref_name.split(':')[-1] if ':' in ref_name else ref_name
+                    
+                    # Look up the attribute group and add its attributes
+                    if group_name in self.attribute_groups:
+                        group_attrs = self.attribute_groups[group_name]['attributes']
+                        for attr_info in group_attrs:
+                            if parent_element:
+                                parent_element.attributes.append(attr_info.copy())
+                            if complex_type:
+                                complex_type.attributes.append(attr_info.copy())
     
     def _calculate_dependencies(self) -> None:
         """Calculate dependencies between schema components."""
@@ -365,6 +513,8 @@ class XSDParser:
             'global_elements': {name: self._element_to_dict(elem) for name, elem in self.global_elements.items()},
             'complex_types': {name: self._complex_type_to_dict(ct) for name, ct in self.complex_types.items()},
             'simple_types': {name: self._simple_type_to_dict(st) for name, st in self.simple_types.items()},
+            'global_attributes': self.global_attributes,
+            'attribute_groups': self.attribute_groups,
             'dependencies': {name: list(deps) for name, deps in self.dependencies.items()}
         }
     

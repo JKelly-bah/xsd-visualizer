@@ -150,7 +150,17 @@ class JavaUMLGenerator:
         if isinstance(elements, list):
             for element_info in elements:
                 element_name = element_info.get('name', '')
-                if element_info.get('type', '').endswith('Type') or element_info.get('complex_type'):
+                element_type = element_info.get('type') or ''
+                has_attributes = len(element_info.get('attributes', [])) > 0
+                
+                # Create class for elements that:
+                # 1. Have a type ending in 'Type', OR
+                # 2. Have a complex_type, OR  
+                # 3. Have attributes directly (inline complex types)
+                if (element_type.endswith('Type') or 
+                    element_info.get('complex_type') or 
+                    has_attributes):
+                    
                     java_class = JavaClass(
                         name=self._to_java_class_name(element_name),
                         package=package_name,
@@ -163,13 +173,41 @@ class JavaUMLGenerator:
                     if 'complex_type' in element_info:
                         self._extract_attributes_from_type(java_class, element_info['complex_type'])
                     
-                    # Only add class if it has attributes    
-                    if java_class.attributes:
-                        self.classes[java_class.name] = java_class
+                    # Also extract direct attributes from the element itself
+                    if 'attributes' in element_info:
+                        for attr_info in element_info['attributes']:
+                            # Skip attributes without names (unresolved references)
+                            if not attr_info.get('name'):
+                                continue
+                                
+                            # Convert to the format expected by the Java generator
+                            java_type = self._xsd_type_to_java(attr_info.get('type', 'String'))
+                            
+                            # Check for duplicates by name to avoid processing the same attribute twice
+                            attr_name = self._to_java_field_name(attr_info.get('name', ''))
+                            if not any(existing_attr['name'] == attr_name for existing_attr in java_class.attributes):
+                                java_class.attributes.append({
+                                    'name': attr_name,
+                                    'type': java_type,
+                                    'visibility': 'private',
+                                    'documentation': attr_info.get('documentation', ''),
+                                    'is_attribute': True,
+                                    'required': attr_info.get('use') == 'required'
+                                })
+                    
+                    # Always add the class now (we know it has content if we reached here)
+                    self.classes[java_class.name] = java_class
         else:
             # Handle case where elements is a dict (older format)
             for element_name, element_info in elements.items():
-                if element_info.get('type', '').endswith('Type') or element_info.get('complex_type'):
+                element_type = element_info.get('type') or ''
+                has_attributes = len(element_info.get('attributes', [])) > 0
+                
+                # Create class for elements that have type ending in 'Type', complex_type, or direct attributes
+                if (element_type.endswith('Type') or 
+                    element_info.get('complex_type') or 
+                    has_attributes):
+                    
                     java_class = JavaClass(
                         name=self._to_java_class_name(element_name),
                         package=package_name,
@@ -182,9 +220,30 @@ class JavaUMLGenerator:
                     if 'complex_type' in element_info:
                         self._extract_attributes_from_type(java_class, element_info['complex_type'])
                     
-                    # Only add class if it has attributes
-                    if java_class.attributes:
-                        self.classes[java_class.name] = java_class
+                    # Also extract direct attributes from the element itself
+                    if 'attributes' in element_info:
+                        for attr_info in element_info['attributes']:
+                            # Skip attributes without names (unresolved references)
+                            if not attr_info.get('name'):
+                                continue
+                                
+                            # Convert to the format expected by the Java generator
+                            java_type = self._xsd_type_to_java(attr_info.get('type', 'String'))
+                            
+                            # Check for duplicates by name to avoid processing the same attribute twice
+                            attr_name = self._to_java_field_name(attr_info.get('name', ''))
+                            if not any(existing_attr['name'] == attr_name for existing_attr in java_class.attributes):
+                                java_class.attributes.append({
+                                    'name': attr_name,
+                                    'type': java_type,
+                                    'visibility': 'private',
+                                    'documentation': attr_info.get('documentation', ''),
+                                    'is_attribute': True,
+                                    'required': attr_info.get('use') == 'required'
+                                })
+                    
+                    # Always add the class now (we know it has content if we reached here)
+                    self.classes[java_class.name] = java_class
                 
         # Process simple types as enums or constants
         for type_name, type_info in structure.get('simple_types', {}).items():
@@ -475,9 +534,15 @@ class JavaUMLGenerator:
         
     def _to_java_field_name(self, xsd_name: str) -> str:
         """Convert XSD element name to Java field name"""
+        if not xsd_name:
+            return 'unnamed'
+            
         # Remove namespace prefix
         if ':' in xsd_name:
             xsd_name = xsd_name.split(':', 1)[1]
+            
+        if not xsd_name:
+            return 'unnamed'
             
         # Convert to camelCase
         parts = xsd_name.replace('-', '_').split('_')
@@ -491,18 +556,20 @@ class JavaUMLGenerator:
         # Remove namespace prefix
         if ':' in xsd_type:
             prefix, local_type = xsd_type.split(':', 1)
+            if not local_type:  # Handle case where local_type is empty
+                return 'String'
             if prefix in ['xs', 'xsd']:  # Handle both standard XSD prefixes
                 xsd_type = f'{prefix}:{local_type}'
             else:
                 # Custom type - convert to class name for types ending with 'Type'
-                if local_type.endswith('Type') or local_type.endswith('type'):
+                if local_type and (local_type.endswith('Type') or local_type.endswith('type')):
                     return self._to_java_class_name(local_type)
                 else:
                     # Unknown custom type, default to String
                     return 'String'
         
         # Check for direct type ending in 'Type' (no namespace)
-        if xsd_type.endswith('Type') or xsd_type.endswith('type'):
+        if xsd_type and (xsd_type.endswith('Type') or xsd_type.endswith('type')):
             return self._to_java_class_name(xsd_type)
             
         return self.xsd_to_java_types.get(xsd_type, 'String')
@@ -541,6 +608,8 @@ class JavaUMLGenerator:
             # Check for other restrictions like pattern, length, etc.
             # For now, just return String for other restriction types
             base_type = restriction_info.get('base', 'xs:string')
+            if not base_type:
+                base_type = 'xs:string'
             return self._xsd_type_to_java(base_type)
             
         return 'String'
