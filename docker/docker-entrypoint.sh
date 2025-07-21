@@ -14,6 +14,13 @@ VERBOSE="${VERBOSE:-0}"
 
 echo "XSD Visualizer Docker Container"
 echo "==============================="
+echo
+
+# Verify Java and PlantUML installation
+echo "🔧 Verifying dependencies..."
+java -version 2>&1 | head -1
+plantuml -version 2>&1 | head -1 || echo "PlantUML: Ready"
+echo
 
 # Check if input directory is mounted
 if [ ! -d "$INPUT_DIR" ]; then
@@ -74,25 +81,25 @@ echo "$XSD_FILES" | while read -r xsd_file; do
         python3 -c "
 import sys
 sys.path.insert(0, '/app/src')
-from analyzers.tree_visualizer import TreeVisualizer
+from analyzers.tree_visualizer import XSDTreeVisualizer
 from parsers.multi_file_xsd_parser import MultiFileXSDParser
 
 try:
-    # Use multi-file parser to capture cross-file relationships
-    parser = MultiFileXSDParser('$xsd_file')
-    visualizer = TreeVisualizer('$xsd_file')
-    visualizer.parser = parser
-    visualizer.structure = parser.parse()
-    visualizer.export_svg('$OUTPUT_DIR/${filename}_tree.svg')
-except Exception as e:
-    print(f'Multi-file parsing failed, falling back to single-file: {e}')
-    # Fallback to regular tree visualizer
-    visualizer = TreeVisualizer('$xsd_file')
+    visualizer = XSDTreeVisualizer('$xsd_file')
     visualizer.load_schema()
     visualizer.export_svg('$OUTPUT_DIR/${filename}_tree.svg')
-" || echo "    Warning: SVG generation failed for $xsd_file"
+except Exception as e:
+    print(f'Warning: SVG generation failed for $xsd_file: {e}')
+" 2>/dev/null || echo "    Warning: SVG generation failed for $xsd_file"
     fi
 done
+
+echo
+echo "Generating Java UML class diagrams..."
+# Generate Java UML from all XSD files
+XSD_FILES_ARGS=$(echo "$XSD_FILES" | tr '
+' ' ')
+python3 java_uml_generator.py $XSD_FILES_ARGS --output-dir "$OUTPUT_DIR" --formats plantuml mermaid java 2>/dev/null && echo "✅ Java UML diagrams generated successfully" || echo "⚠️ Warning: Java UML generation encountered issues"
 
 echo
 echo "Processing complete! Check the output directory for results."

@@ -1,0 +1,69 @@
+classDiagram
+  class Authortype {
+    -String firstname
+    -String lastname
+    -int birthyear
+    -String biography
+    -String authorid
+    +getFirstname() String
+    +setFirstname(String) void
+    +getLastname() String
+    +setLastname(String) void
+    +getBirthyear() int
+    +setBirthyear(int) void
+    +getBiography() String
+    +setBiography(String) void
+    +getAuthorid() String
+    +setAuthorid(String) void
+  }
+  class Booktype {
+    -String title
+    -List<Authortype> author
+    -String isbn
+    -int publishedyear
+    -String category
+    -BigDecimal price
+    -String description
+    -boolean instock
+    -String bookid
+    -int edition
+    +getTitle() String
+    +setTitle(String) void
+    +getAuthor() List<Authortype>
+    +setAuthor(List<Authortype>) void
+    +getIsbn() String
+    +setIsbn(String) void
+    +getPublishedyear() int
+    +setPublishedyear(int) void
+    +getCategory() String
+    +setCategory(String) void
+    +getPrice() BigDecimal
+    +setPrice(BigDecimal) void
+    +getDescription() String
+    +setDescription(String) void
+    +getInstock() boolean
+    +setInstock(boolean) void
+    +getBookid() String
+    +setBookid(String) void
+    +getEdition() int
+    +setEdition(int) void
+  }
+  class Bookstoretype {
+    -String storename
+    -String address
+    -List<Booktype> book
+    -String storeid
+    -LocalDate established
+    +getStorename() String
+    +setStorename(String) void
+    +getAddress() String
+    +setAddress(String) void
+    +getBook() List<Booktype>
+    +setBook(List<Booktype>) void
+    +getStoreid() String
+    +setStoreid(String) void
+    +getEstablished() LocalDate
+    +setEstablished(LocalDate) void
+  }
+  Booktype *-- Authortype : author
+  Bookstoretype *-- Booktype : book

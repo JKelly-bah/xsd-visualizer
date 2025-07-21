@@ -1,0 +1,109 @@
+@startuml XSD_Java_Classes
+
+package "com.example.schema" {
+class Authortype {
+  -firstname : String
+  -lastname : String
+  -birthyear : int
+  -biography : String
+  -authorid : Id
+  --
+  +getFirstname() : String
+  +setFirstname(firstname: String) : void
+  +getLastname() : String
+  +setLastname(lastname: String) : void
+  +getBirthyear() : int
+  +setBirthyear(birthyear: int) : void
+  +getBiography() : String
+  +setBiography(biography: String) : void
+  +getAuthorid() : Id
+  +setAuthorid(authorid: Id) : void
+}
+note right of Authortype
+  Author information
+end note
+
+class Booktype {
+  -title : String
+  -author : List<Authortype>
+  -isbn : Isbntype
+  -publishedyear : int
+  -category : Categorytype
+  -price : BigDecimal
+  -description : String
+  -instock : boolean
+  -bookid : Id
+  -edition : int
+  --
+  +getTitle() : String
+  +setTitle(title: String) : void
+  +getAuthor() : List<Authortype>
+  +setAuthor(author: List<Authortype>) : void
+  +getIsbn() : Isbntype
+  +setIsbn(isbn: Isbntype) : void
+  +getPublishedyear() : int
+  +setPublishedyear(publishedyear: int) : void
+  +getCategory() : Categorytype
+  +setCategory(category: Categorytype) : void
+  +getPrice() : BigDecimal
+  +setPrice(price: BigDecimal) : void
+  +getDescription() : String
+  +setDescription(description: String) : void
+  +getInstock() : boolean
+  +setInstock(instock: boolean) : void
+  +getBookid() : Id
+  +setBookid(bookid: Id) : void
+  +getEdition() : int
+  +setEdition(edition: int) : void
+}
+note right of Booktype
+  Book information
+end note
+
+class Bookstoretype {
+  -storename : String
+  -address : String
+  -book : List<Booktype>
+  -storeid : String
+  -established : LocalDate
+  --
+  +getStorename() : String
+  +setStorename(storename: String) : void
+  +getAddress() : String
+  +setAddress(address: String) : void
+  +getBook() : List<Booktype>
+  +setBook(book: List<Booktype>) : void
+  +getStoreid() : String
+  +setStoreid(storeid: String) : void
+  +getEstablished() : LocalDate
+  +setEstablished(established: LocalDate) : void
+}
+note right of Bookstoretype
+  Main bookstore container
+end note
+
+class Bookstore {
+}
+note right of Bookstore
+  Root element representing a bookstore
+end note
+
+class Author {
+}
+note right of Author
+  Standalone author element
+end note
+
+class Book {
+}
+note right of Book
+  Standalone book element
+end note
+
+}
+
+/* Relationships */
+Booktype *-- Authortype : author "1..*"
+Bookstoretype *-- Booktype : book "1..*"
+
+@enduml

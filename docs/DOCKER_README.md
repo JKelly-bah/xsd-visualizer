@@ -47,6 +47,8 @@ This document explains how to run the XSD Visualizer using Docker containers, ma
    - JSON structure export
    - Text summaries
    - Tree visualizations
+   - **Java UML class diagrams** (PlantUML and Mermaid formats)
+   - **Java source code** generated from XSD schemas
 4. **Saves results** to your specified output directory on your computer
 
 ## Output Structure
@@ -57,6 +59,12 @@ After running, your output directory will contain:
 output/
 ├── structure.json          # JSON export of schema structure
 ├── summary.txt            # Text summary of analysis
+├── schema_tree.svg        # SVG tree visualizations
+├── java_uml.puml          # PlantUML class diagram (NEW!)
+├── java_uml.mmd           # Mermaid class diagram (NEW!)
+├── java/                  # Generated Java source code (NEW!)
+│   └── [package-path]/    # Java package structure
+│       └── *.java         # Java class files
 ├── html/                  # HTML documentation
 │   ├── index.html         # Main documentation page
 │   ├── elements/          # Individual element pages
@@ -158,6 +166,13 @@ docker run --rm \
   -v "/path/to/output:/output" \
   xsd-visualizer:latest \
   python3 selective_analyzer.py /input/*.xsd --elements "book,author"
+
+# Generate only Java UML (NEW!)
+docker run --rm \
+  -v "/path/to/input:/input" \
+  -v "/path/to/output:/output" \
+  xsd-visualizer:latest \
+  python3 java_uml_generator.py /input/*.xsd --formats plantuml java
 ```
 
 ## Performance Notes

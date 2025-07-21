@@ -44,6 +44,9 @@ python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 # Tree visualization
 python tree_visualizer.py schema.xsd --format console
 
+# Generate Java UML from XSD schemas (NEW!)
+python java_uml_generator.py schema.xsd --formats plantuml mermaid java
+
 # Interactive element inspection
 python element_inspector.py schema.xsd
 ```
@@ -68,6 +71,9 @@ python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 # Tree visualization
 python tree_visualizer.py schema.xsd --format console
 
+# Generate Java UML from XSD schemas (NEW!)
+python java_uml_generator.py schema.xsd --formats plantuml mermaid java
+
 # Interactive element inspection
 python element_inspector.py schema.xsd
 ```
@@ -79,6 +85,7 @@ The toolkit is **fully functional** with all core features implemented:
 - ✅ XSD Parser with full schema analysis
 - ✅ **Selective Analysis** (NEW: cherry-pick components from multiple files)
 - ✅ **Multi-File Schema Support** (NEW: imports, includes, redefines)
+- ✅ **Java UML Generator** (NEW: convert XSD to Java UML diagrams and source code)
 - ✅ HTML documentation generator with interactive features  
 - ✅ Tree visualization (console, text, SVG formats)
 - ✅ Element and type inspection tools
@@ -149,6 +156,7 @@ The toolkit is **fully functional** with all core features implemented:
 - **XSD Parser**: Extract structure and relationships from XSD files
 - **Multi-File Parser** (NEW): Handle schemas with imports, includes, and redefines
 - **Relationship Analyzer** (NEW): Analyze and explain relationships between multiple XSD files
+- **Java UML Generator** (NEW): Convert XSD schemas to Java UML class diagrams (PlantUML, Mermaid) and Java source code
 - **HTML Documentation Generator**: Create browsable documentation with hyperlinks
 - **Tree Visualization**: Generate hierarchical views of schema structures
 - **Element Inspector**: Interactive tool for examining specific elements and types
@@ -212,6 +220,7 @@ XSD_Visualizations/
 │   │   ├── selective_analyzer.py # Selective analysis
 │   │   ├── relationship_analyzer.py # Multi-file relationships
 │   │   ├── csv_schema_analyzer.py # CSV validation
+│   │   ├── java_uml_generator.py # Java UML generation (NEW)
 │   │   └── element_inspector.py # Element inspection
 │   ├── parsers/                 # XSD parsing utilities
 │   │   ├── xsd_parser.py        # Core XSD parsing
@@ -247,6 +256,7 @@ XSD_Visualizations/
 ├── xsd_analyzer.py              # Main analysis wrapper (root convenience)
 ├── tree_visualizer.py           # Tree visualization wrapper
 ├── selective_analyzer.py        # Selective analysis wrapper
+├── java_uml_generator.py        # Java UML generator wrapper (NEW)
 └── PROJECT_STRUCTURE.md         # Detailed structure documentation
 ```
 
@@ -334,6 +344,40 @@ python tree_visualizer.py schema.xsd --format svg --output schema_tree.svg
 
 # Focus on specific element
 python tree_visualizer.py schema.xsd --element BookType --format console
+```
+
+### Java UML Generation (NEW! ☕)
+
+Generate Java UML class diagrams and source code from XSD schemas:
+
+**Unix/macOS/Linux:**
+```bash
+# Generate PlantUML, Mermaid, and Java code
+python java_uml_generator.py schema.xsd --formats plantuml mermaid java
+
+# Multiple XSD files with combined output
+python java_uml_generator.py schema1.xsd schema2.xsd --combined
+
+# Specific output directory and Java package
+python java_uml_generator.py schema.xsd --output-dir ./generated --java-package com.example.model
+
+# Generate only PlantUML diagrams
+python java_uml_generator.py schema.xsd --formats plantuml --output-dir ./diagrams
+```
+
+**Windows PowerShell:**
+```powershell
+# Generate PlantUML, Mermaid, and Java code
+python java_uml_generator.py schema.xsd --formats plantuml mermaid java
+
+# Multiple XSD files with combined output
+python java_uml_generator.py schema1.xsd schema2.xsd --combined
+
+# Specific output directory and Java package
+python java_uml_generator.py schema.xsd --output-dir ./generated --java-package com.example.model
+
+# Generate only PlantUML diagrams
+python java_uml_generator.py schema.xsd --formats plantuml --output-dir ./diagrams
 ```
 
 ### Element Inspection
@@ -548,6 +592,60 @@ python element_inspector.py schema.xsd --element bookstore
 python element_inspector.py schema.xsd --type BookType
 python element_inspector.py schema.xsd --search "book"
 python element_inspector.py schema.xsd --stats
+```
+
+### Java UML Generator - `java_uml_generator.py` (NEW! ☕)
+
+**Unix/macOS/Linux:**
+```bash
+# Basic usage
+python java_uml_generator.py schema.xsd [options]
+
+# Options:
+--output-dir, -o DIR       Output directory (default: ./output)
+--formats, -f FORMAT       Output formats: plantuml, mermaid, java (default: all)
+--java-package PACKAGE     Java package name for generated classes
+--combined                 Combine multiple XSD files into single output
+--verbose, -v              Enable verbose logging
+
+# Examples:
+# Generate all formats (PlantUML, Mermaid, Java code)
+python java_uml_generator.py schema.xsd
+
+# Generate only PlantUML diagrams
+python java_uml_generator.py schema.xsd --formats plantuml
+
+# Multiple files with custom package
+python java_uml_generator.py schema1.xsd schema2.xsd --java-package com.example.model
+
+# Combined analysis of multiple related schemas
+python java_uml_generator.py main.xsd types.xsd --combined --output-dir ./uml
+```
+
+**Windows PowerShell:**
+```powershell
+# Basic usage
+python java_uml_generator.py schema.xsd [options]
+
+# Options:
+--output-dir, -o DIR       Output directory (default: ./output)
+--formats, -f FORMAT       Output formats: plantuml, mermaid, java (default: all)
+--java-package PACKAGE     Java package name for generated classes
+--combined                 Combine multiple XSD files into single output
+--verbose, -v              Enable verbose logging
+
+# Examples:
+# Generate all formats (PlantUML, Mermaid, Java code)
+python java_uml_generator.py schema.xsd
+
+# Generate only PlantUML diagrams
+python java_uml_generator.py schema.xsd --formats plantuml
+
+# Multiple files with custom package
+python java_uml_generator.py schema1.xsd schema2.xsd --java-package com.example.model
+
+# Combined analysis of multiple related schemas
+python java_uml_generator.py main.xsd types.xsd --combined --output-dir ./uml
 ```
 
 ### Selective Analyzer - `selective_analyzer.py` (NEW! 🎯)
