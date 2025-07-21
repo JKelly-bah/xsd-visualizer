@@ -14,7 +14,7 @@ This document explains how to run the XSD Visualizer using Docker containers, ma
 1. **Open Git Bash** in the project directory
 2. **Run the analysis:**
    ```bash
-   ./run-xsd-visualizer.sh "/c/path/to/your/xsd/files" "/c/path/to/output"
+   ./docker/run-xsd-visualizer.sh "/c/path/to/your/xsd/files" "/c/path/to/output"
    ```
 
 ### For Windows (Command Prompt)
@@ -22,20 +22,20 @@ This document explains how to run the XSD Visualizer using Docker containers, ma
 1. **Open Command Prompt** in the project directory
 2. **Run the analysis:**
    ```cmd
-   run-xsd-visualizer.bat "C:\path\to\your\xsd\files" "C:\path\to\output"
+   docker/run-xsd-visualizer.bat "C:\path\to\your\xsd\files" "C:\path\to\output"
    ```
 
 ### Examples
 
 ```bash
 # Analyze XSD files in the current directory, output to ./results
-./run-xsd-visualizer.sh "." "./results"
+./docker/run-xsd-visualizer.sh "." "./results"
 
 # Analyze XSD files in a specific Windows directory
-./run-xsd-visualizer.sh "/c/MyProject/schemas" "/c/MyProject/documentation"
+./docker/run-xsd-visualizer.sh "/c/MyProject/schemas" "/c/MyProject/documentation"
 
 # Using relative paths
-./run-xsd-visualizer.sh "./test_multifile" "./output"
+./docker/run-xsd-visualizer.sh "./tests/data" "./output"
 ```
 
 ## What the Container Does

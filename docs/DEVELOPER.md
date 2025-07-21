@@ -390,7 +390,7 @@ result = parser.parse_selections()
 python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 
 # Generate detailed reports
-python relationship_analyzer.py test_multifile/*.xsd --output-dir ./reports
+python relationship_analyzer.py tests/data/*.xsd --output-dir ./reports
 
 # Console-only analysis
 python relationship_analyzer.py *.xsd --report-only
@@ -643,7 +643,7 @@ class PluginManager:
 ```
 tests/
 ├── test_xsd_parser.py           # Core parser functionality
-├── test_multifile_parser.py     # Multi-file parsing (Enhanced)
+├── tests/data_parser.py     # Multi-file parsing (Enhanced)
 ├── test_selective_parser.py     # Selective parsing (Enhanced)
 ├── test_relationship_analyzer.py # Multi-file relationship analysis (NEW)
 ├── test_html_generator.py       # HTML output generation

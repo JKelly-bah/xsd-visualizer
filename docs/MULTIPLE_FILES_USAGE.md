@@ -142,37 +142,37 @@ Use when you want to:
 ### Main Analyzer
 ```bash
 # Analyze both test schemas separately
-python xsd_analyzer.py test_bookstore.xsd test_multifile/library.xsd
+python xsd_analyzer.py test_bookstore.xsd tests/data/library.xsd
 
 # Analyze as combined project
-python xsd_analyzer.py test_bookstore.xsd test_multifile/library.xsd --combined
+python xsd_analyzer.py test_bookstore.xsd tests/data/library.xsd --combined
 
 # Quick summary of multiple files
-python xsd_analyzer.py test_bookstore.xsd test_multifile/library.xsd --summary-only
+python xsd_analyzer.py test_bookstore.xsd tests/data/library.xsd --summary-only
 ```
 
 ### Tree Visualizer
 ```bash
 # Console trees for both files
-python tree_visualizer.py test_bookstore.xsd test_multifile/library.xsd
+python tree_visualizer.py test_bookstore.xsd tests/data/library.xsd
 
 # SVG exports for each file
-python tree_visualizer.py test_bookstore.xsd test_multifile/library.xsd --format svg
+python tree_visualizer.py test_bookstore.xsd tests/data/library.xsd --format svg
 
 # Combined visualization
-python tree_visualizer.py test_bookstore.xsd test_multifile/library.xsd --combined --format svg
+python tree_visualizer.py test_bookstore.xsd tests/data/library.xsd --combined --format svg
 ```
 
 ### Selective Analyzer
 ```bash
 # Select specific elements from both files
-python selective_analyzer.py test_bookstore.xsd test_multifile/library.xsd --elements book,library
+python selective_analyzer.py test_bookstore.xsd tests/data/library.xsd --elements book,library
 
 # Select all components (useful for filtering large schemas)
-python selective_analyzer.py test_bookstore.xsd test_multifile/library.xsd --namespaces "*"
+python selective_analyzer.py test_bookstore.xsd tests/data/library.xsd --namespaces "*"
 
 # Generate HTML documentation for selected components
-python selective_analyzer.py test_bookstore.xsd test_multifile/library.xsd \
+python selective_analyzer.py test_bookstore.xsd tests/data/library.xsd \
   --elements book,library --formats html summary
 ```
 

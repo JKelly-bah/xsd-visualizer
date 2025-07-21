@@ -2,11 +2,25 @@
 
 A comprehensive offline toolkit for visualizing and analyzing large, complex XSD (XML Schema Definition) files. This workspace provides powerful tools for understanding schema structure, generating documentation, and creating visual representations without requiring any online services.
 
-**🆕 Latest Features:**
+**🆕 Latest Updates:**
+- **🏗️ MAJOR REORGANIZATION** - Clean modular `src/` structure for better maintainability
 - **CSV Schema Analyzer** - Validate XSD files against CSV-defined business requirements with dynamic depth structure
 - **Relationship Analyzer** - Analyze and explain relationships between multiple XSD files
 - **Multi-File Schema Support** - Handle imports, includes, and redefines across multiple XSD files
 - **Selective Analysis** - Cherry-pick specific elements, types, or namespaces from different files
+- **Docker Containerization** - Complete Docker setup for easy deployment and usage
+
+## 📁 Project Structure
+
+This project is now organized with a clean, modular structure:
+- **`src/`** - Core source code organized by function (analyzers, parsers, generators)
+- **`docs/`** - All documentation consolidated in one place
+- **`docker/`** - Docker containerization files and scripts
+- **`tests/`** - Test data and scripts for validation
+- **`demos/`** - Example scripts and sample data
+- **`config/`** - Configuration files and dependencies
+
+📖 **[See PROJECT_STRUCTURE.md for detailed layout](../PROJECT_STRUCTURE.md)**
 
 ## 🚀 Quick Commands
 
@@ -22,7 +36,7 @@ python csv_schema_analyzer.py requirements.csv schema.xsd --formats json
 python xsd_analyzer.py main_schema.xsd --multi-file --formats html
 
 # Cherry-pick specific components (NEW!)
-python demo_selective.py
+python demos/demo_selective.py
 
 # Analyze relationships between files (NEW!)
 python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
@@ -46,7 +60,7 @@ python csv_schema_analyzer.py requirements.csv schema.xsd --formats json
 python xsd_analyzer.py main_schema.xsd --multi-file --formats html
 
 # Cherry-pick specific components (NEW!)
-python demo_selective.py
+python demos/demo_selective.py
 
 # Analyze relationships between files (NEW!)
 python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
@@ -79,21 +93,21 @@ The toolkit is **fully functional** with all core features implemented:
    **Unix/macOS/Linux:**
    ```bash
    # Single file analysis
-   python demo.py
-   python xsd_analyzer.py test_bookstore.xsd --summary-only
+   python demos/demo.py
+   python xsd_analyzer.py tests/data/test_bookstore.xsd --summary-only
    
    # Multi-file schema analysis (NEW!)
-   python xsd_analyzer.py test_multifile/library.xsd --multi-file --summary-only
+   python xsd_analyzer.py tests/data/library.xsd --multi-file --summary-only
    ```
    
    **Windows PowerShell:**
    ```powershell
    # Single file analysis
-   python demo.py
-   python xsd_analyzer.py test_bookstore.xsd --summary-only
+   python demos/demo.py
+   python xsd_analyzer.py tests/data/test_bookstore.xsd --summary-only
    
    # Multi-file schema analysis (NEW!)
-   python xsd_analyzer.py test_multifile/library.xsd --multi-file --summary-only
+   python xsd_analyzer.py tests/data/library.xsd --multi-file --summary-only
    ```
 
 2. **Generate HTML documentation:**
@@ -191,25 +205,49 @@ XSD_Visualizations/
 │   ├── dependencies.html         # Dependency visualization
 │   ├── styles.css               # CSS styling
 │   └── script.js                # Interactive JavaScript
-├── test_multifile/               # Multi-file schema samples (NEW)
-│   ├── library.xsd              # Main schema with imports/includes
-│   ├── publisher.xsd            # Imported publisher schema
-│   └── common-types.xsd         # Included common types
-├── xsd_analyzer.py               # Main analysis tool
-├── csv_schema_analyzer.py        # CSV requirements validator (NEW)
-├── selective_analyzer.py         # Selective analysis tool (NEW)
-├── relationship_analyzer.py      # Multi-file relationship analyzer (NEW)
-├── tree_visualizer.py            # Tree structure visualization
-├── element_inspector.py          # Interactive element examination
-├── demo.py                       # Usage examples and help
-├── demo_selective.py             # Selective analysis demo (NEW)
-├── test_bookstore.xsd            # Sample XSD for testing
-├── sample_requirements.csv       # Sample CSV requirements file (NEW)
-├── demo_requirements.csv         # Demo CSV requirements file (NEW)
-├── test_multifile_parser.py      # Multi-file parser tests (NEW)
-├── requirements.txt              # Python dependencies
-└── .vscode/
-    └── tasks.json               # VS Code task definitions
+├── src/                          # Core source code (NEW STRUCTURE)
+│   ├── analyzers/               # Analysis tools
+│   │   ├── xsd_analyzer.py      # Main analysis engine
+│   │   ├── tree_visualizer.py   # Tree visualization
+│   │   ├── selective_analyzer.py # Selective analysis
+│   │   ├── relationship_analyzer.py # Multi-file relationships
+│   │   ├── csv_schema_analyzer.py # CSV validation
+│   │   └── element_inspector.py # Element inspection
+│   ├── parsers/                 # XSD parsing utilities
+│   │   ├── xsd_parser.py        # Core XSD parsing
+│   │   ├── multi_file_xsd_parser.py # Multi-file handling
+│   │   └── selective_xsd_parser.py # Selective parsing
+│   └── generators/              # Output generation
+│       └── html_generator.py    # HTML documentation generator
+├── tests/                       # Test files and scripts
+│   ├── data/                    # Test XSD files
+│   │   ├── test_bookstore.xsd   # Sample bookstore schema
+│   │   ├── library.xsd          # Library schema with imports
+│   │   ├── common-types.xsd     # Common type definitions
+│   │   └── publisher.xsd        # Publisher schema
+│   └── scripts/                 # Test scripts
+│       ├── tests/data_parser.py # Multi-file parser tests
+│       └── debug_*.py           # Debug utilities
+├── demos/                       # Demo scripts and samples
+│   ├── demo.py                  # Basic usage examples
+│   ├── demo_selective.py        # Selective analysis demo
+│   ├── demo_requirements.csv    # Sample CSV requirements
+│   └── sample_requirements.csv  # Additional CSV samples
+├── docs/                        # Documentation
+│   ├── README.md                # Main documentation
+│   ├── DOCKER_README.md         # Docker setup guide
+│   └── *.md                     # Additional documentation
+├── docker/                      # Docker containerization
+│   ├── Dockerfile               # Container definition
+│   ├── docker-entrypoint.sh     # Container entry point
+│   └── run-xsd-visualizer.*     # Convenience scripts
+├── config/                      # Configuration files
+│   ├── requirements.txt         # Python dependencies
+│   └── xsd-visualizer.code-workspace # VS Code workspace
+├── xsd_analyzer.py              # Main analysis wrapper (root convenience)
+├── tree_visualizer.py           # Tree visualization wrapper
+├── selective_analyzer.py        # Selective analysis wrapper
+└── PROJECT_STRUCTURE.md         # Detailed structure documentation
 ```
 
 ## 🎯 Usage Examples
@@ -254,7 +292,7 @@ python xsd_analyzer.py main_schema.xsd --multi-file --formats html
 python xsd_analyzer.py main_schema.xsd --multi-file --formats html json text --output-dir ./docs
 
 # Test with included sample
-python xsd_analyzer.py test_multifile/library.xsd --multi-file --summary-only
+python xsd_analyzer.py tests/data/library.xsd --multi-file --summary-only
 ```
 
 **Windows PowerShell:**
@@ -269,7 +307,7 @@ python xsd_analyzer.py main_schema.xsd --multi-file --formats html
 python xsd_analyzer.py main_schema.xsd --multi-file --formats html json text --output-dir ./docs
 
 # Test with included sample
-python xsd_analyzer.py test_multifile/library.xsd --multi-file --summary-only
+python xsd_analyzer.py tests/data/library.xsd --multi-file --summary-only
 ```
 
 ### Tree Visualization
@@ -355,13 +393,13 @@ python relationship_analyzer.py schemas/*.xsd --report-only
 **Unix/macOS/Linux:**
 ```bash
 # Cherry-pick specific components from multiple files
-python demo_selective.py
+python demos/demo_selective.py
 ```
 
 **Windows PowerShell:**
 ```powershell
 # Cherry-pick specific components from multiple files
-python demo_selective.py
+python demos/demo_selective.py
 ```
 
 **Python API for custom selections:**
@@ -631,7 +669,7 @@ python relationship_analyzer.py file1.xsd file2.xsd [more_files...] [options]
 python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 
 # Generate comprehensive reports
-python relationship_analyzer.py test_multifile/*.xsd --output-dir ./reports
+python relationship_analyzer.py tests/data/*.xsd --output-dir ./reports
 
 # Quick analysis with reports only
 python relationship_analyzer.py *.xsd --report-only
@@ -652,7 +690,7 @@ python relationship_analyzer.py file1.xsd file2.xsd [more_files...] [options]
 python relationship_analyzer.py schema1.xsd schema2.xsd schema3.xsd
 
 # Generate comprehensive reports
-python relationship_analyzer.py test_multifile/*.xsd --output-dir ./reports
+python relationship_analyzer.py tests/data/*.xsd --output-dir ./reports
 
 # Quick analysis with reports only
 python relationship_analyzer.py *.xsd --report-only
@@ -663,25 +701,25 @@ python relationship_analyzer.py *.xsd --report-only
 **Unix/macOS/Linux:**
 ```bash
 # Basic demo with single file
-python demo.py
+python demos/demo.py
 
 # Selective analysis demo (NEW!)
-python demo_selective.py
+python demos/demo_selective.py
 
 # Multi-file parser test
-python test_multifile_parser.py
+python tests/data_parser.py
 ```
 
 **Windows PowerShell:**
 ```powershell
 # Basic demo with single file
-python demo.py
+python demos/demo.py
 
 # Selective analysis demo (NEW!)
-python demo_selective.py
+python demos/demo_selective.py
 
 # Multi-file parser test
-python test_multifile_parser.py
+python tests/data_parser.py
 ```
 
 ## 📋 Requirements
@@ -727,7 +765,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 
 # Test installation
-python demo.py
+python demos/demo.py
 ```
 
 **Windows PowerShell (run as Administrator for graphviz):**
@@ -748,7 +786,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # Test installation
-python demo.py
+python demos/demo.py
 ```
 
 **Windows Command Prompt:**
@@ -766,7 +804,7 @@ python -m venv .venv
 pip install -r requirements.txt
 
 # Test installation
-python demo.py
+python demos/demo.py
 ```
 
 ### VS Code Setup (Optional)
