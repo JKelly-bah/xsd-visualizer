@@ -16,7 +16,7 @@ from collections import defaultdict
 # Add utils directory to path
 sys.path.insert(0, str(Path(__file__).parent / 'utils'))
 
-from utils.multi_file_xsd_parser import MultiFileXSDParser, SchemaReference
+from src.parsers.multi_file_xsd_parser import MultiFileXSDParser, SchemaReference
 from rich.console import Console
 from rich.table import Table
 from rich.tree import Tree

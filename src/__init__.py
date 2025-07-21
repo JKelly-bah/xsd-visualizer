@@ -1,0 +1,1 @@
+# XSD Visualizer Core Package

@@ -60,7 +60,7 @@ echo
 # Convert newline-separated list to space-separated for command line
 XSD_FILES_ARGS=$(echo "$XSD_FILES" | tr '\n' ' ')
 
-# Run the analyzer
+# Run the analyzer using the wrapper script
 python3 xsd_analyzer.py $XSD_FILES_ARGS --output-dir "$OUTPUT_DIR" --formats $FORMATS $ARGS
 
 echo
@@ -73,9 +73,9 @@ echo "$XSD_FILES" | while read -r xsd_file; do
         # Try multi-file parsing first for cross-file dependencies
         python3 -c "
 import sys
-sys.path.insert(0, '/app/utils')
-from tree_visualizer import TreeVisualizer
-from multi_file_xsd_parser import MultiFileXSDParser
+sys.path.insert(0, '/app/src')
+from analyzers.tree_visualizer import TreeVisualizer
+from parsers.multi_file_xsd_parser import MultiFileXSDParser
 
 try:
     # Use multi-file parser to capture cross-file relationships

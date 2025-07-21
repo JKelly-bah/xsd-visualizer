@@ -22,7 +22,7 @@ import json
 # Add utils directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'utils'))
 
-from utils.multi_file_xsd_parser import MultiFileXSDParser
+from src.parsers.multi_file_xsd_parser import MultiFileXSDParser
 
 console = Console()
 logger = logging.getLogger(__name__)

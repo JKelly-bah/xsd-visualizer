@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better Docker layer caching
-COPY requirements.txt .
+COPY config/requirements.txt .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -25,7 +25,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Make the entry point script executable while still root
-RUN chmod +x /app/docker-entrypoint.sh
+RUN chmod +x /app/docker/docker-entrypoint.sh
 
 # Create a non-root user for security
 RUN useradd -m -u 1000 xsduser && \
@@ -33,8 +33,8 @@ RUN useradd -m -u 1000 xsduser && \
 
 USER xsduser
 
-# Set Python path to include utils
-ENV PYTHONPATH=/app:/app/utils
+# Set Python path to include src directory
+ENV PYTHONPATH=/app:/app/src
 
 # Set the entrypoint
-ENTRYPOINT ["/app/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker/docker-entrypoint.sh"]

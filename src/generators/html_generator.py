@@ -42,7 +42,7 @@ class HTMLGenerator:
     
     def _get_default_template_dir(self) -> str:
         """Get the default template directory."""
-        current_dir = Path(__file__).parent.parent
+        current_dir = Path(__file__).parent.parent.parent  # Go up to project root
         return str(current_dir / "templates")
     
     def generate_documentation(self, output_dir: str) -> None:

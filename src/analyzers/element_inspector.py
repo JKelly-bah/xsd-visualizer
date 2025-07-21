@@ -12,7 +12,7 @@ from typing import Dict, Any, Optional
 # Add utils directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'utils'))
 
-from utils.xsd_parser import XSDParser
+from src.parsers.xsd_parser import XSDParser
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
