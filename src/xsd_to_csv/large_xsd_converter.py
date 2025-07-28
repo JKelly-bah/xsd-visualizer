@@ -135,11 +135,11 @@ class LargeXSDToCSVConverter(XSDToCSVConverter):
     def _build_type_registry(self, schema_data: Dict[str, Any]):
         """Build comprehensive type and namespace registries."""
         # Build namespace mappings
-        for file_info in schema_data.get('multi_file_info', {}).get('processed_files', []):
-            namespace = file_info.get('target_namespace', '')
-            file_path = file_info.get('file_path', '')
-            if namespace and file_path:
-                self.namespace_mappings[namespace] = file_path
+        for file_path in schema_data.get('multi_file_info', {}).get('processed_files', []):
+            # file_path is a string, not a dictionary
+            if isinstance(file_path, str) and file_path:
+                # Extract namespace from schema data if available
+                self.namespace_mappings[file_path] = file_path
         
         # Build cross-schema type registry
         for type_name, type_info in schema_data.get('complex_types', {}).items():
@@ -177,19 +177,20 @@ class LargeXSDToCSVConverter(XSDToCSVConverter):
         
         # Import/Include information
         multi_file_info = schema_data.get('multi_file_info', {})
-        for file_info in multi_file_info.get('processed_files', []):
-            if file_info.get('file_path') != metadata.get('file_path'):  # Skip main file
+        for file_path in multi_file_info.get('processed_files', []):
+            # file_path is a string, not a dictionary
+            if isinstance(file_path, str) and file_path != metadata.get('file_path'):  # Skip main file
                 row = {
                     'category': 'imported_schema',
-                    'name': os.path.basename(file_info.get('file_path', '')),
+                    'name': os.path.basename(file_path),
                     'type': 'import/include',
-                    'namespace': file_info.get('target_namespace', ''),
-                    'version': file_info.get('version', ''),
+                    'namespace': '',  # Cannot determine namespace from file path alone
+                    'version': '',
                     'scope': 'import',
-                    'description': f"Imported schema: {file_info.get('target_namespace', '')}",
-                    'source_file': file_info.get('file_path', ''),
+                    'description': f"Imported schema: {os.path.basename(file_path)}",
+                    'source_file': file_path,
                     'location': 'Schema Import',
-                    'import_type': file_info.get('import_type', 'import')
+                    'import_type': 'import'  # Cannot determine import type from file path
                 }
                 rows.append(row)
         
@@ -199,33 +200,37 @@ class LargeXSDToCSVConverter(XSDToCSVConverter):
         """Extract root elements with detailed analysis."""
         rows = []
         
-        for element_name, element_info in schema_data.get('elements', {}).items():
-            element_type = element_info.get('type', '')
-            
-            # Resolve type information
-            type_details = self._resolve_type_details(element_type, schema_data)
-            
-            row = {
-                'category': 'root_element',
-                'name': element_name,
-                'type': element_type,
-                'resolved_type': type_details.get('resolved_name', element_type),
-                'namespace': self._extract_namespace_from_type(element_type),
-                'type_namespace': type_details.get('namespace', ''),
-                'scope': 'global',
-                'use': 'root',
-                'min_occurs': element_info.get('min_occurs', '1'),
-                'max_occurs': element_info.get('max_occurs', '1'),
-                'description': self._extract_documentation(element_info),
-                'source_file': element_info.get('source_file', ''),
-                'location': 'Root Element',
-                'is_abstract': element_info.get('abstract', False),
-                'substitution_group': element_info.get('substitution_group', ''),
-                'type_category': type_details.get('category', ''),
-                'has_children': type_details.get('has_children', False),
-                'attribute_count': type_details.get('attribute_count', 0)
-            }
-            rows.append(row)
+        # Handle elements as a list, not a dictionary
+        elements = schema_data.get('elements', [])
+        if isinstance(elements, list):
+            for element_info in elements:
+                element_name = element_info.get('name', '')
+                element_type = element_info.get('type', '')
+                
+                # Resolve type information
+                type_details = self._resolve_type_details(element_type, schema_data)
+                
+                row = {
+                    'category': 'root_element',
+                    'name': element_name,
+                    'type': element_type,
+                    'resolved_type': type_details.get('resolved_name', element_type),
+                    'namespace': self._extract_namespace_from_type(element_type),
+                    'type_namespace': type_details.get('namespace', ''),
+                    'scope': 'global',
+                    'use': 'root',
+                    'min_occurs': element_info.get('min_occurs', '1'),
+                    'max_occurs': element_info.get('max_occurs', '1'),
+                    'description': self._extract_documentation(element_info),
+                    'source_file': element_info.get('source_file', ''),
+                    'location': 'Root Element',
+                    'is_abstract': element_info.get('abstract', False),
+                    'substitution_group': element_info.get('substitution_group', ''),
+                    'type_category': type_details.get('category', ''),
+                    'has_children': type_details.get('has_children', False),
+                    'attribute_count': type_details.get('attribute_count', 0)
+                }
+                rows.append(row)
         
         return rows
     
